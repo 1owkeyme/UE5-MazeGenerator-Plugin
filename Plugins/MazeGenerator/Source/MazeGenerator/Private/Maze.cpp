@@ -17,7 +17,6 @@ AMaze::AMaze()
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Kruskal, TSharedPtr<Algorithm>(new Kruskal));
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Prim, TSharedPtr<Algorithm>(new Prim));
 
-
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
 	FloorCells = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(TEXT("FloorCells"));
@@ -52,17 +51,20 @@ void AMaze::GenerateMaze()
 	WallCells->SetStaticMesh(WallCell.StaticMesh);
 
 
-	const TSharedPtr<Algorithm> Algorithm = GenerationAlgorithms[GenerationAlgorithm];
+	const TSharedPtr<Algorithm> ChosenAlgorithm = GenerationAlgorithms[GenerationAlgorithm];
 
-	FGrid Grid = Algorithm->GetGrid(FVector2D(MazeSize));
-	
+	const TArray<TArray<uint8>> Grid = ChosenAlgorithm->GetGrid(FVector2D(MazeSize));
+
 	for (int X = 0; X < MazeSize.X; ++X)
 	{
 		for (int Y = 0; Y < MazeSize.Y; ++Y)
 		{
-			FTransform Transform(FVector(FloorCell.GetSize().X * X, FloorCell.GetSize().Y * Y, 0.f));
+			if (!Grid[X][Y])
+			{
+				FTransform Transform(FVector(FloorCell.GetSize().X * X, FloorCell.GetSize().Y * Y, 0.f));
 
-			FloorCells->AddInstance(Transform);
+				FloorCells->AddInstance(Transform);
+			}
 		}
 	}
 }

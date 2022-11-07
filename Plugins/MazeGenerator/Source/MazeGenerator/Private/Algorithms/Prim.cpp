@@ -3,8 +3,8 @@
 
 #include "Prim.h"
 
-FGrid Prim::GetGrid(const FVector2D& Size)
+TArray<TArray<uint8>> Prim::GetGrid(const FVector2D& Size)
 {
 	
-	return FGrid();
+	return TArray<TArray<uint8>>();
 }

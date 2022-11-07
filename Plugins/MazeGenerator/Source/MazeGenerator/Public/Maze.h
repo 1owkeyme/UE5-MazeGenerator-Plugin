@@ -105,6 +105,7 @@ public:
 private:
 	TMap<EGenerationAlgorithm, TSharedPtr<Algorithm>> GenerationAlgorithms;
 
+
 	UPROPERTY()
 	UHierarchicalInstancedStaticMeshComponent* FloorCells;
 
