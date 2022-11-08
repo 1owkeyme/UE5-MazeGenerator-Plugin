@@ -10,7 +10,7 @@
 class Prim : public Algorithm
 {
 public:
-	virtual TArray<TArray<uint8>> GetGrid(const FVector2D& Size) override;
+	virtual TArray<TArray<uint8>> GetGrid(const FIntVector2& Size, const int32 Seed) override;
 
 	virtual ~Prim() override = default;
 };

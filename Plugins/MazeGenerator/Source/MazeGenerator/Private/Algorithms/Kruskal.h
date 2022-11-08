@@ -22,7 +22,7 @@ struct FTreeEdge
 	int32 Y;
 	EDirection Direction;
 
-	FTreeEdge(int32 X, int32 Y, EDirection Direction): X(X), Y(Y), Direction(Direction)
+	FTreeEdge(const int32 X, const int32 Y, const EDirection Direction): X(X), Y(Y), Direction(Direction)
 	{
 	};
 };
@@ -30,24 +30,26 @@ struct FTreeEdge
 
 class Tree
 {
-	TSharedPtr<Tree> Parent;
+	Tree* Parent;
 
 public:
 	Tree(): Parent(nullptr)
 	{
 	};
 
-	TSharedPtr<Tree> GetRoot();
+	Tree* GetRoot();
 
-	bool IsConnected(const TSharedPtr<Tree>& AnotherTree);
+	bool IsConnected(Tree* const AnotherTree);
 
-	void Connect(const TSharedPtr<Tree>& TreeToConnect);
+	void Connect(Tree* const TreeToConnect);
 };
 
 class Kruskal : public Algorithm
 {
 public:
-	virtual TArray<TArray<uint8>> GetGrid(const FVector2D& Size) override;
+	virtual TArray<TArray<uint8>> GetGrid(const FIntVector2& Size, const int32 Seed) override;
 
 	virtual ~Kruskal() override = default;
+private:
+	TArray<TArray<uint8>> GetDirectionsGrid(const FIntVector2& Size, const int32 Seed) const;
 };

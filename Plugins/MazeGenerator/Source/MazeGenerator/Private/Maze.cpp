@@ -4,7 +4,6 @@
 #include "Maze.h"
 
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
-#include "Engine/StaticMesh.h"
 
 #include "Algorithms/Algorithm.h"
 #include "Algorithms/Kruskal.h"
@@ -53,13 +52,13 @@ void AMaze::GenerateMaze()
 
 	const TSharedPtr<Algorithm> ChosenAlgorithm = GenerationAlgorithms[GenerationAlgorithm];
 
-	const TArray<TArray<uint8>> Grid = ChosenAlgorithm->GetGrid(FVector2D(MazeSize));
+	const TArray<TArray<uint8>> Grid = ChosenAlgorithm->GetGrid(FIntVector2(MazeSize), Seed);
 
 	for (int X = 0; X < MazeSize.X; ++X)
 	{
 		for (int Y = 0; Y < MazeSize.Y; ++Y)
 		{
-			if (!Grid[X][Y])
+			if (Grid[X][Y])
 			{
 				FTransform Transform(FVector(FloorCell.GetSize().X * X, FloorCell.GetSize().Y * Y, 0.f));
 

@@ -29,13 +29,13 @@ struct FMazeSize
 	UPROPERTY(EditAnywhere)
 	int32 Y;
 
-	FMazeSize(): X(20), Y(20)
+	FMazeSize(): X(4), Y(3)
 	{
 	}
-
-	explicit operator FVector2D() const
+	
+	explicit operator const FIntVector2() const
 	{
-		return FVector2D(X, Y);
+		return FIntVector2(X, Y);
 	}
 };
 
