@@ -11,6 +11,9 @@
 class Algorithm;
 class UHierarchicalInstancedStaticMeshComponent;
 
+#define MAZE_MIN_SIZE 3
+#define MAZE_MAX_SIZE 100
+
 UENUM(BlueprintType)
 enum class EGenerationAlgorithm : uint8
 {
@@ -23,16 +26,16 @@ struct FMazeSize
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, meta=(ClampMin=3, ClampMax=200))
 	int32 X;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, meta=(ClampMin=3, ClampMax=200))
 	int32 Y;
 
-	FMazeSize(): X(4), Y(3)
+	FMazeSize(): X(3), Y(3)
 	{
 	}
-	
+
 	explicit operator const FIntVector2() const
 	{
 		return FIntVector2(X, Y);

@@ -54,15 +54,21 @@ void AMaze::GenerateMaze()
 
 	const TArray<TArray<uint8>> Grid = ChosenAlgorithm->GetGrid(FIntVector2(MazeSize), Seed);
 
+	const FVector2D FloorSize = FloorCell.GetSize();
+	const FVector2D WallSize = WallCell.GetSize();
 	for (int X = 0; X < MazeSize.X; ++X)
 	{
 		for (int Y = 0; Y < MazeSize.Y; ++Y)
 		{
 			if (Grid[X][Y])
 			{
-				FTransform Transform(FVector(FloorCell.GetSize().X * X, FloorCell.GetSize().Y * Y, 0.f));
-
-				FloorCells->AddInstance(Transform);
+				const FVector Location(FloorSize.X * X, FloorSize.Y * Y, 0.f);
+				FloorCells->AddInstance(FTransform(Location));
+			}
+			else
+			{
+				const FVector Location(WallSize.X * X, WallSize.Y * Y, 0.f);
+				WallCells->AddInstance(FTransform(Location));
 			}
 		}
 	}
