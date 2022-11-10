@@ -16,13 +16,19 @@ enum class EDirection : uint8
 
 EDirection OppositeDirection(const EDirection Direction);
 
+int32 DirectionDX(const EDirection Direction);
+int32 DirectionDY(const EDirection Direction);
+
 class Algorithm
 {
 public:
 	virtual ~Algorithm() = default;
 
-	virtual TArray<TArray<uint8>> GetGrid(const FIntVector2& Size, const int32 Seed) = 0;
+	TArray<TArray<uint8>> GetGrid(const FIntVector2& Size, const int32 Seed);
 
 protected:
 	static TArray<TArray<uint8>> CreateZeroedGrid(const FIntVector2& Size);
+
+private:
+	virtual TArray<TArray<uint8>> GetDirectionsGrid(const FIntVector2& Size, const FRandomStream& RandomStream) = 0;
 };

@@ -9,7 +9,7 @@
 
 enum class ECellState : uint8
 {
-	// It is important to have next values more than maximum of EDirection enum.
+	// It is important to have following values more than maximum of EDirection enum.
 	None = 0,
 	In = 64,
 	Frontier = 128,
@@ -18,11 +18,10 @@ enum class ECellState : uint8
 class Prim : public Algorithm
 {
 public:
-	virtual TArray<TArray<uint8>> GetGrid(const FIntVector2& Size, const int32 Seed) override;
-
 	virtual ~Prim() override = default;
+
 private:
-	TArray<TArray<uint8>> GetDirectionsGrid(const FIntVector2& Size, const int32 Seed);
+	virtual TArray<TArray<uint8>> GetDirectionsGrid(const FIntVector2& Size, const FRandomStream& RandomStream) override;
 
 	void ExpandFrontierFrom(const int32 X, const int32 Y, TArray<TArray<uint8>>& Grid);
 

@@ -38,9 +38,8 @@ private:
 class Kruskal : public Algorithm
 {
 public:
-	virtual TArray<TArray<uint8>> GetGrid(const FIntVector2& Size, const int32 Seed) override;
-
 	virtual ~Kruskal() override = default;
+	
 private:
-	TArray<TArray<uint8>> GetDirectionsGrid(const FIntVector2& Size, const int32 Seed) const;
+	virtual TArray<TArray<uint8>> GetDirectionsGrid(const FIntVector2& Size, const FRandomStream& RandomStream) override;
 };

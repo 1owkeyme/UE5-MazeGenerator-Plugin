@@ -3,43 +3,9 @@
 
 #include "Prim.h"
 
-TArray<TArray<uint8>> Prim::GetGrid(const FIntVector2& Size, const int32 Seed)
-{
-	const FIntVector2 DirectionsGridSize((Size.X + 1) / 2, (Size.Y + 1) / 2);
-
-	TArray<TArray<uint8>> DirectionsGrid = GetDirectionsGrid(DirectionsGridSize, Seed);
-
-	TArray<TArray<uint8>> Grid = CreateZeroedGrid(Size);
-
-	// Remap directions grid onto regular grid.
-	for (int32 Y = 0; Y < DirectionsGridSize.Y; ++Y)
-	{
-		for (int32 X = 0; X < DirectionsGridSize.X; ++X)
-		{
-			Grid[Y * 2][X * 2] = 1;
-
-			//It only makes sense to check the western and northern directions,
-			//because the remaining ones would simply overlap.
-
-			if (DirectionsGrid[Y][X] & static_cast<uint8>(EDirection::West))
-			{
-				Grid[Y * 2][X * 2 - 1] = 1;
-			}
-			if (DirectionsGrid[Y][X] & static_cast<uint8>(EDirection::North))
-			{
-				Grid[Y * 2 - 1][X * 2] = 1;
-			}
-		}
-	}
-
-	return Grid;
-}
-
-TArray<TArray<uint8>> Prim::GetDirectionsGrid(const FIntVector2& Size, const int32 Seed)
+TArray<TArray<uint8>> Prim::GetDirectionsGrid(const FIntVector2& Size, const FRandomStream& RandomStream)
 {
 	TArray<TArray<uint8>> Grid = CreateZeroedGrid(Size);
-
-	const FRandomStream RandomStream(Seed);
 
 	const int32 RandomWidth = RandomStream.RandRange(0, Size.X - 1);
 	const int32 RandomHeight = RandomStream.RandRange(0, Size.Y - 1);
@@ -78,7 +44,7 @@ void Prim::ExpandFrontierFrom(const int32 X, const int32 Y, TArray<TArray<uint8>
 
 void Prim::ExpandFrontierWith(const int32 X, const int32 Y, TArray<TArray<uint8>>& Grid)
 {
-	const bool bInBounds = X >= 0 && Y >= 0 && X < Grid[0].Num() && Y < Grid.Num();
+	const bool bInBounds = Y >= 0 && X >= 0 && Y < Grid.Num() && X < Grid[Y].Num();
 	if (bInBounds && Grid[Y][X] == 0)
 	{
 		Grid[Y][X] |= static_cast<uint8>(ECellState::Frontier);
