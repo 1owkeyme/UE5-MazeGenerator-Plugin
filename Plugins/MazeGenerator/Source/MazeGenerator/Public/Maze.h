@@ -98,6 +98,9 @@ public:
 	EGenerationAlgorithm GenerationAlgorithm;
 
 	UPROPERTY(EditAnywhere, Category="Maze")
+	bool bGenerateOutline = true;
+
+	UPROPERTY(EditAnywhere, Category="Maze")
 	FMazeSize MazeSize;
 
 	UPROPERTY(EditAnywhere, Category="Maze|Cells")
@@ -105,6 +108,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Maze|Cells")
 	FMazeCell WallCell;
+
+	UPROPERTY(EditAnywhere, Category="Maze|Cells")
+	FMazeCell OutlineWallCell;
 
 private:
 	TMap<EGenerationAlgorithm, TSharedPtr<Algorithm>> GenerationAlgorithms;
@@ -116,9 +122,15 @@ private:
 	UPROPERTY()
 	UHierarchicalInstancedStaticMeshComponent* WallCells;
 
+	UPROPERTY()
+	UHierarchicalInstancedStaticMeshComponent* OutlineWallCells;
+
 	void GenerateMaze();
 
+	void GenerateMazeOutline();
+
 	void ClearMaze() const;
+
 protected:
 	virtual void BeginPlay() override;
 
