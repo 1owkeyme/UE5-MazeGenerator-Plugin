@@ -6,6 +6,7 @@
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 
 #include "Algorithms/Algorithm.h"
+#include "Algorithms/Backtracker.h"
 #include "Algorithms/Kruskal.h"
 #include "Algorithms/Prim.h"
 
@@ -15,6 +16,7 @@ AMaze::AMaze()
 
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Kruskal, TSharedPtr<Algorithm>(new Kruskal));
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Prim, TSharedPtr<Algorithm>(new Prim));
+	GenerationAlgorithms.Add(EGenerationAlgorithm::Backtracker, TSharedPtr<Algorithm>(new Backtracker));
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 

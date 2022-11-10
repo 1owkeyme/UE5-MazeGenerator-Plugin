@@ -19,6 +19,7 @@ enum class EGenerationAlgorithm : uint8
 {
 	Kruskal,
 	Prim,
+	Backtracker
 };
 
 USTRUCT()
