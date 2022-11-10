@@ -33,6 +33,13 @@ AMaze::AMaze()
 		WallCells->SetupAttachment(GetRootComponent());
 		WallCells->SetStaticMesh(WallCell.StaticMesh);
 	}
+
+	OutlineWallCells = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(TEXT("OutlineWallCells"));
+	if (OutlineWallCells)
+	{
+		OutlineWallCells->SetupAttachment(GetRootComponent());
+		OutlineWallCells->SetStaticMesh(OutlineWallCell.StaticMesh);
+	}
 }
 
 void AMaze::GenerateMaze()
@@ -44,13 +51,25 @@ void AMaze::GenerateMaze()
 
 	if (!(FloorCell && WallCell))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Not all cells for maze have been specified."));
+		UE_LOG(LogTemp, Warning, TEXT("To create maze specify FloorCell and WallCell."));
 		return;
 	}
 
 	FloorCells->SetStaticMesh(FloorCell.StaticMesh);
 	WallCells->SetStaticMesh(WallCell.StaticMesh);
 
+	if (bGenerateOutline)
+	{
+		if (OutlineWallCell)
+		{
+			OutlineWallCells->SetStaticMesh(OutlineWallCell.StaticMesh);
+			GenerateMazeOutline();
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("To create outline for maze specify OutlineWallCell."));
+		}
+	}
 
 	const TSharedPtr<Algorithm> ChosenAlgorithm = GenerationAlgorithms[GenerationAlgorithm];
 
@@ -58,9 +77,9 @@ void AMaze::GenerateMaze()
 
 	const FVector2D FloorSize = FloorCell.GetSize();
 	const FVector2D WallSize = WallCell.GetSize();
-	for (int Y = 0; Y < MazeSize.Y; ++Y)
+	for (int32 Y = 0; Y < MazeSize.Y; ++Y)
 	{
-		for (int X = 0; X < MazeSize.X; ++X)
+		for (int32 X = 0; X < MazeSize.X; ++X)
 		{
 			if (Grid[Y][X])
 			{
@@ -76,10 +95,35 @@ void AMaze::GenerateMaze()
 	}
 }
 
+void AMaze::GenerateMazeOutline()
+{
+	FVector Location1;
+	FVector Location2;
+
+	Location1.Y = -WallCell.GetSize().Y;
+	Location2.Y = WallCell.GetSize().Y * MazeSize.Y;
+	for (int32 X = -1; X < MazeSize.X + 1; ++X)
+	{
+		Location1.X = Location2.X = X * WallCell.GetSize().X;
+		OutlineWallCells->AddInstance(FTransform(Location1));
+		OutlineWallCells->AddInstance(FTransform(Location2));
+	}
+
+	Location1.X = -WallCell.GetSize().X;
+	Location2.X = WallCell.GetSize().X * MazeSize.X;
+	for (int32 Y = 0; Y < MazeSize.Y; ++Y)
+	{
+		Location1.Y = Location2.Y = Y * WallCell.GetSize().Y;
+		OutlineWallCells->AddInstance(FTransform(Location1));
+		OutlineWallCells->AddInstance(FTransform(Location2));
+	}
+}
+
 void AMaze::ClearMaze() const
 {
 	FloorCells->ClearInstances();
 	WallCells->ClearInstances();
+	OutlineWallCells->ClearInstances();
 }
 
 void AMaze::BeginPlay()
