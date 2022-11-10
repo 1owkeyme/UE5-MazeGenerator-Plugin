@@ -56,11 +56,11 @@ void AMaze::GenerateMaze()
 
 	const FVector2D FloorSize = FloorCell.GetSize();
 	const FVector2D WallSize = WallCell.GetSize();
-	for (int X = 0; X < MazeSize.X; ++X)
+	for (int Y = 0; Y < MazeSize.Y; ++Y)
 	{
-		for (int Y = 0; Y < MazeSize.Y; ++Y)
+		for (int X = 0; X < MazeSize.X; ++X)
 		{
-			if (Grid[X][Y])
+			if (Grid[Y][X])
 			{
 				const FVector Location(FloorSize.X * X, FloorSize.Y * Y, 0.f);
 				FloorCells->AddInstance(FTransform(Location));

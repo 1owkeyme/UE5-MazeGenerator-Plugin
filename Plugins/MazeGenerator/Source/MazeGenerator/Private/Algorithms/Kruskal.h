@@ -6,16 +6,6 @@
 
 #include "Algorithm.h"
 
-
-enum class EDirection : uint8
-{
-	None = 0,
-	East = 1,
-	North = 2,
-	South = 4,
-	West = 8,
-};
-
 struct FTreeEdge
 {
 	int32 X;
@@ -30,8 +20,6 @@ struct FTreeEdge
 
 class Tree
 {
-	Tree* Parent;
-
 public:
 	Tree(): Parent(nullptr)
 	{
@@ -42,6 +30,9 @@ public:
 	bool IsConnected(Tree* const AnotherTree);
 
 	void Connect(Tree* const TreeToConnect);
+
+private:
+	Tree* Parent;
 };
 
 class Kruskal : public Algorithm
