@@ -19,7 +19,8 @@ enum class EGenerationAlgorithm : uint8
 {
 	Kruskal,
 	Prim,
-	Backtracker
+	Backtracker,
+	Eller
 };
 
 USTRUCT()
@@ -33,7 +34,7 @@ struct FMazeSize
 	UPROPERTY(EditAnywhere, meta=(ClampMin=3, ClampMax=200))
 	int32 Y;
 
-	FMazeSize(): X(3), Y(3)
+	FMazeSize(): X(5), Y(5)
 	{
 	}
 
