@@ -22,6 +22,7 @@ enum class EGenerationAlgorithm : uint8
 	Backtracker UMETA(DisplayName="Recursive Backtracker"),
 	Eller,
 	Division UMETA(DisplayName="Recursive Division"),
+	HaK UMETA(DisplayName="Hunt-and-Kill")
 };
 
 USTRUCT()
@@ -29,10 +30,10 @@ struct FMazeSize
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, meta=(ClampMin=3, ClampMax=201, Delta=2))
+	UPROPERTY(EditAnywhere, meta=(ClampMin=3, ClampMax=201))
 	int32 X;
 
-	UPROPERTY(EditAnywhere, meta=(ClampMin=3, ClampMax=201, Delta=2))
+	UPROPERTY(EditAnywhere, meta=(ClampMin=3, ClampMax=201))
 	int32 Y;
 
 	FMazeSize(): X(5), Y(5)
