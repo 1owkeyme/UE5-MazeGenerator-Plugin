@@ -29,10 +29,10 @@ struct FMazeSize
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, meta=(ClampMin=3, ClampMax=200))
+	UPROPERTY(EditAnywhere, meta=(ClampMin=3, ClampMax=201, Delta=2))
 	int32 X;
 
-	UPROPERTY(EditAnywhere, meta=(ClampMin=3, ClampMax=200))
+	UPROPERTY(EditAnywhere, meta=(ClampMin=3, ClampMax=201, Delta=2))
 	int32 Y;
 
 	FMazeSize(): X(5), Y(5)
@@ -50,7 +50,7 @@ struct FMazeCell
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, meta=(NoResetToDefault))
 	UStaticMesh* StaticMesh;
 
 	void CalculateSize()
@@ -96,27 +96,26 @@ public:
 	UPROPERTY(EditAnywhere, Category="Maze")
 	uint64 Seed = 0;
 
-	UPROPERTY(EditAnywhere, Category="Maze")
+	UPROPERTY(EditAnywhere, Category="Maze", meta=(NoResetToDefault))
 	EGenerationAlgorithm GenerationAlgorithm;
 
-	UPROPERTY(EditAnywhere, Category="Maze")
+	UPROPERTY(EditAnywhere, Category="Maze", meta=(NoResetToDefault))
 	bool bGenerateOutline = true;
 
 	UPROPERTY(EditAnywhere, Category="Maze")
 	FMazeSize MazeSize;
 
-	UPROPERTY(EditAnywhere, Category="Maze|Cells")
+	UPROPERTY(EditAnywhere, Category="Maze|Cells", meta=(NoResetToDefault))
 	FMazeCell FloorCell;
 
-	UPROPERTY(EditAnywhere, Category="Maze|Cells")
+	UPROPERTY(EditAnywhere, Category="Maze|Cells", meta=(NoResetToDefault))
 	FMazeCell WallCell;
 
-	UPROPERTY(EditAnywhere, Category="Maze|Cells")
+	UPROPERTY(EditAnywhere, Category="Maze|Cells", meta=(NoResetToDefault))
 	FMazeCell OutlineWallCell;
 
 private:
 	TMap<EGenerationAlgorithm, TSharedPtr<Algorithm>> GenerationAlgorithms;
-
 
 	UPROPERTY()
 	UHierarchicalInstancedStaticMeshComponent* FloorCells;
