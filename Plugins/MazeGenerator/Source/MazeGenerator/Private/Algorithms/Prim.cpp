@@ -7,10 +7,10 @@ TArray<TArray<uint8>> Prim::GetDirectionsGrid(const FIntVector2& Size, const FRa
 {
 	TArray<TArray<uint8>> Grid = CreateZeroedGrid(Size);
 
-	const int32 RandomWidth = RandomStream.RandRange(0, Size.X - 1);
-	const int32 RandomHeight = RandomStream.RandRange(0, Size.Y - 1);
+	const int32 RandomX = RandomStream.RandRange(0, Size.X - 1);
+	const int32 RandomY = RandomStream.RandRange(0, Size.Y - 1);
 
-	ExpandFrontierFrom(RandomWidth, RandomHeight, Grid);
+	ExpandFrontierFrom(RandomX, RandomY, Grid);
 
 	while (!Frontier.IsEmpty())
 	{
@@ -57,27 +57,19 @@ TArray<TPair<int32, int32>> Prim::GetNeighbours(const int32 X, const int32 Y, co
 	TArray<TPair<int32, int32>> Neighbours;
 	if (X > 0 && Grid[Y][X - 1] & static_cast<uint8>(ECellState::In))
 	{
-		const int32 x = X;
-		const int32 y = Y;
-		Neighbours.Emplace(x - 1, y);
+		Neighbours.Emplace(X - 1, Y);
 	}
 	if (X + 1 < Grid[Y].Num() && Grid[Y][X + 1] & static_cast<uint8>(ECellState::In))
 	{
-		const int32 x = X;
-		const int32 y = Y;
-		Neighbours.Emplace(x + 1, y);
+		Neighbours.Emplace(X + 1, Y);
 	}
 	if (Y > 0 && Grid[Y - 1][X] & static_cast<uint8>(ECellState::In))
 	{
-		const int32 x = X;
-		const int32 y = Y;
-		Neighbours.Emplace(x, y - 1);
+		Neighbours.Emplace(X, Y - 1);
 	}
 	if (Y + 1 < Grid.Num() && Grid[Y + 1][X] & static_cast<uint8>(ECellState::In))
 	{
-		const int32 x = X;
-		const int32 y = Y;
-		Neighbours.Emplace(x, y + 1);
+		Neighbours.Emplace(X, Y + 1);
 	}
 	return Neighbours;
 }
