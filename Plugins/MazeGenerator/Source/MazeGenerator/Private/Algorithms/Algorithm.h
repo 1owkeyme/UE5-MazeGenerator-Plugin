@@ -30,5 +30,6 @@ protected:
 	static TArray<TArray<uint8>> CreateZeroedGrid(const FIntVector2& Size);
 
 private:
-	virtual TArray<TArray<uint8>> GetDirectionsGrid(const FIntVector2& Size, const FRandomStream& RandomStream) = 0;
+	virtual TArray<TArray<uint8>> GetDirectionsGrid(const FIntVector2& Size,
+	                                                const FRandomStream& RandomStream) = 0;
 };

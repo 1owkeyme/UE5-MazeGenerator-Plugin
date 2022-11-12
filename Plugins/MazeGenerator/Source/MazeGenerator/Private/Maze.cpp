@@ -7,6 +7,7 @@
 
 #include "Algorithms/Algorithm.h"
 #include "Algorithms/Backtracker.h"
+#include "Algorithms/Division.h"
 #include "Algorithms/Eller.h"
 #include "Algorithms/Kruskal.h"
 #include "Algorithms/Prim.h"
@@ -19,6 +20,7 @@ AMaze::AMaze()
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Prim, TSharedPtr<Algorithm>(new Prim));
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Backtracker, TSharedPtr<Algorithm>(new Backtracker));
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Eller, TSharedPtr<Algorithm>(new Eller));
+	GenerationAlgorithms.Add(EGenerationAlgorithm::Division, TSharedPtr<Algorithm>(new Division));
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 

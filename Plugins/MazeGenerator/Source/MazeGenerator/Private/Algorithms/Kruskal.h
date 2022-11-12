@@ -41,6 +41,6 @@ public:
 	virtual ~Kruskal() override = default;
 
 private:
-	virtual TArray<TArray<uint8>>
-	GetDirectionsGrid(const FIntVector2& Size, const FRandomStream& RandomStream) override;
+	virtual TArray<TArray<uint8>> GetDirectionsGrid(const FIntVector2& Size,
+	                                                const FRandomStream& RandomStream) override;
 };

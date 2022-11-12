@@ -19,8 +19,9 @@ enum class EGenerationAlgorithm : uint8
 {
 	Kruskal,
 	Prim,
-	Backtracker,
-	Eller
+	Backtracker UMETA(DisplayName="Recursive Backtracker"),
+	Eller,
+	Division UMETA(DisplayName="Recursive Division"),
 };
 
 USTRUCT()
