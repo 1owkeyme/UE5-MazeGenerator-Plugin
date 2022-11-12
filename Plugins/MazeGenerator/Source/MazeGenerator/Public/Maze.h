@@ -30,10 +30,10 @@ struct FMazeSize
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, meta=(ClampMin=3, ClampMax=201))
+	UPROPERTY(EditAnywhere, meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999))
 	int32 X;
 
-	UPROPERTY(EditAnywhere, meta=(ClampMin=3, ClampMax=201))
+	UPROPERTY(EditAnywhere, meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999))
 	int32 Y;
 
 	FMazeSize(): X(5), Y(5)
