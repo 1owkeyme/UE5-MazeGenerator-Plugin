@@ -22,7 +22,8 @@ enum class EGenerationAlgorithm : uint8
 	Backtracker UMETA(DisplayName="Recursive Backtracker"),
 	Eller,
 	Division UMETA(DisplayName="Recursive Division"),
-	HaK UMETA(DisplayName="Hunt-and-Kill")
+	HaK UMETA(DisplayName="Hunt-and-Kill"),
+	Sidewinder
 };
 
 USTRUCT()
@@ -100,9 +101,6 @@ public:
 	UPROPERTY(EditAnywhere, Category="Maze", meta=(NoResetToDefault))
 	EGenerationAlgorithm GenerationAlgorithm;
 
-	UPROPERTY(EditAnywhere, Category="Maze", meta=(NoResetToDefault))
-	bool bGenerateOutline = true;
-
 	UPROPERTY(EditAnywhere, Category="Maze")
 	FMazeSize MazeSize;
 
@@ -112,7 +110,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="Maze|Cells", meta=(NoResetToDefault))
 	FMazeCell WallCell;
 
-	UPROPERTY(EditAnywhere, Category="Maze|Cells", meta=(NoResetToDefault))
+	UPROPERTY(EditAnywhere, Category="Maze|Cells")
 	FMazeCell OutlineWallCell;
 
 private:

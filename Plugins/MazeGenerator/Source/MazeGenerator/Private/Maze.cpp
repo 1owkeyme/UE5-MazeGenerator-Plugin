@@ -12,6 +12,7 @@
 #include "Algorithms/HaK.h"
 #include "Algorithms/Kruskal.h"
 #include "Algorithms/Prim.h"
+#include "Algorithms/Sidewinder.h"
 
 AMaze::AMaze()
 {
@@ -23,6 +24,7 @@ AMaze::AMaze()
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Eller, TSharedPtr<Algorithm>(new Eller));
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Division, TSharedPtr<Algorithm>(new Division));
 	GenerationAlgorithms.Add(EGenerationAlgorithm::HaK, TSharedPtr<Algorithm>(new HaK));
+	GenerationAlgorithms.Add(EGenerationAlgorithm::Sidewinder, TSharedPtr<Algorithm>(new Sidewinder));
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
@@ -64,18 +66,13 @@ void AMaze::GenerateMaze()
 	FloorCells->SetStaticMesh(FloorCell.StaticMesh);
 	WallCells->SetStaticMesh(WallCell.StaticMesh);
 
-	if (bGenerateOutline)
+
+	if (OutlineWallCell)
 	{
-		if (OutlineWallCell)
-		{
-			OutlineWallCells->SetStaticMesh(OutlineWallCell.StaticMesh);
-			GenerateMazeOutline();
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("To create outline for maze specify OutlineWallCell."));
-		}
+		OutlineWallCells->SetStaticMesh(OutlineWallCell.StaticMesh);
+		GenerateMazeOutline();
 	}
+
 
 	const TSharedPtr<Algorithm> ChosenAlgorithm = GenerationAlgorithms[GenerationAlgorithm];
 
