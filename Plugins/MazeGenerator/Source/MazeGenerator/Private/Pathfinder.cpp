@@ -1,5 +1,6 @@
 ﻿#include "Pathfinder.h"
 
+
 TArray<TArray<uint8>> Pathfinder::FindPath(const TArray<TArray<uint8>>& Maze,
                                            const TPair<int32, int32>& Start, const TPair<int32, int32>& End)
 {
@@ -46,9 +47,9 @@ TArray<TArray<uint8>> Pathfinder::FindPath(const TArray<TArray<uint8>>& Maze,
 
 
 	TQueue<int32> Vertices;
-	Vertices.Enqueue(StartVertex);
 
 	const int32 VerticesAmount = Maze.Num() * Maze[0].Num();
+
 	TArray<bool> Visited;
 	Visited.Init(false, VerticesAmount);
 
@@ -59,6 +60,9 @@ TArray<TArray<uint8>> Pathfinder::FindPath(const TArray<TArray<uint8>>& Maze,
 	Distances.Init(0, VerticesAmount);
 
 	int32 Vertex;
+	Vertices.Enqueue(StartVertex);
+	Visited[StartVertex] = true;
+	Parents[StartVertex] = -1;
 	while (Vertices.Dequeue(Vertex))
 	{
 		for (int32 i = 0; i < Graph[Vertex].Num(); ++i)
@@ -73,7 +77,34 @@ TArray<TArray<uint8>> Pathfinder::FindPath(const TArray<TArray<uint8>>& Maze,
 			}
 		}
 	}
+	TArray<int32> GraphPath;
+	if (!Visited[EndVertex])
+	{
+		return TArray<TArray<uint8>>();
+	}
 
+	for (int VertexNumber = EndVertex; VertexNumber != -1; VertexNumber = Parents[VertexNumber])
+	{
+		GraphPath.Emplace(VertexNumber);
+	}
+	Algo::Reverse(GraphPath);
 
-	return TArray<TArray<uint8>>();
+	TArray<TArray<uint8>> MazePath;
+	MazePath.Init(TArray<uint8>(), Maze.Num());
+	for (int Y = 0; Y < Maze.Num(); ++Y)
+	{
+		MazePath[Y].SetNumZeroed(Maze[Y].Num());
+	}
+
+	for (int32 VertexNumber, i = 0; i < GraphPath.Num(); ++i)
+	{
+		VertexNumber = GraphPath[i];
+		if (!VertexNumber)
+		{
+			continue;;
+		}
+		MazePath[VertexNumber / Maze[0].Num()][VertexNumber % Maze[0].Num()] = 1;
+	}
+
+	return MazePath;
 }

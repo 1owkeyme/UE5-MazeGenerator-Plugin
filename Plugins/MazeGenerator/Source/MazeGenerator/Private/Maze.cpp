@@ -100,7 +100,9 @@ void AMaze::GenerateMaze()
 	}
 
 	Pathfinder* MazeSolver = new Pathfinder;
-	MazeSolver->FindPath(Grid, TPair<int32, int32>(0, 0), TPair<int32, int32>(MazeSize.X, MazeSize.Y));
+	MazeSolver->FindPath(Grid,
+	                     TPair<int32, int32>(0, 0),
+	                     TPair<int32, int32>(MazeSize.X - 1, MazeSize.Y - 1));
 }
 
 void AMaze::GenerateMazeOutline()
