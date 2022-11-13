@@ -34,21 +34,24 @@ AMaze::AMaze()
 	if (FloorCells)
 	{
 		FloorCells->SetupAttachment(GetRootComponent());
-		FloorCells->SetStaticMesh(FloorCell.StaticMesh);
 	}
-
+	
+	PathFloorCells = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(TEXT("PathFloorCells"));
+	if (PathFloorCells)
+	{
+		PathFloorCells->SetupAttachment(GetRootComponent());
+	}
+	
 	WallCells = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(TEXT("WallCells"));
 	if (WallCells)
 	{
 		WallCells->SetupAttachment(GetRootComponent());
-		WallCells->SetStaticMesh(WallCell.StaticMesh);
 	}
 
 	OutlineWallCells = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(TEXT("OutlineWallCells"));
 	if (OutlineWallCells)
 	{
 		OutlineWallCells->SetupAttachment(GetRootComponent());
-		OutlineWallCells->SetStaticMesh(OutlineWallCell.StaticMesh);
 	}
 }
 
@@ -56,8 +59,6 @@ void AMaze::GenerateMaze()
 {
 	ClearMaze();
 
-	FloorCell.CalculateSize();
-	WallCell.CalculateSize();
 
 	if (!(FloorCell && WallCell))
 	{
@@ -66,13 +67,25 @@ void AMaze::GenerateMaze()
 	}
 
 	FloorCells->SetStaticMesh(FloorCell.StaticMesh);
-	WallCells->SetStaticMesh(WallCell.StaticMesh);
+	FloorCell.CalculateSize();
 
+	WallCells->SetStaticMesh(WallCell.StaticMesh);
+	WallCell.CalculateSize();
 
 	if (OutlineWallCell)
 	{
 		OutlineWallCells->SetStaticMesh(OutlineWallCell.StaticMesh);
+		OutlineWallCell.CalculateSize();
+
 		GenerateMazeOutline();
+	}
+	if (bEnablePathfinder)
+	{
+		if (PathFloorCell)
+		{
+			PathFloorCells->SetStaticMesh(PathFloorCell.StaticMesh);
+			PathFloorCell.CalculateSize();
+		}
 	}
 
 
@@ -80,13 +93,25 @@ void AMaze::GenerateMaze()
 
 	const TArray<TArray<uint8>> Grid = ChosenAlgorithm->GetGrid(FIntVector2(MazeSize), Seed);
 
+	const TSharedPtr<Pathfinder> MazeSolver(new Pathfinder); // TODO: Move to constructor
+	TArray<TArray<uint8>> PathGrid = MazeSolver->FindPath(Grid,
+	                                                      TPair<int32, int32>(0, 0), // TODO: Check constrains.
+	                                                      TPair<int32, int32>(MazeSize.X - 1, MazeSize.Y - 1));
+
+
 	const FVector2D FloorSize = FloorCell.GetSize();
+	const FVector2D PathFloorSize = PathFloorCell.GetSize();
 	const FVector2D WallSize = WallCell.GetSize();
 	for (int32 Y = 0; Y < MazeSize.Y; ++Y)
 	{
 		for (int32 X = 0; X < MazeSize.X; ++X)
 		{
-			if (Grid[Y][X])
+			if (PathGrid.Num() > 0 && PathGrid[Y][X])
+			{
+				const FVector Location(PathFloorSize.X * X, PathFloorSize.Y * Y, 0.f);
+				PathFloorCells->AddInstance(FTransform(Location));
+			}
+			else if (Grid[Y][X])
 			{
 				const FVector Location(FloorSize.X * X, FloorSize.Y * Y, 0.f);
 				FloorCells->AddInstance(FTransform(Location));
@@ -98,11 +123,6 @@ void AMaze::GenerateMaze()
 			}
 		}
 	}
-
-	Pathfinder* MazeSolver = new Pathfinder;
-	MazeSolver->FindPath(Grid,
-	                     TPair<int32, int32>(0, 0),
-	                     TPair<int32, int32>(MazeSize.X - 1, MazeSize.Y - 1));
 }
 
 void AMaze::GenerateMazeOutline()
@@ -134,6 +154,7 @@ void AMaze::ClearMaze() const
 	FloorCells->ClearInstances();
 	WallCells->ClearInstances();
 	OutlineWallCells->ClearInstances();
+	PathFloorCells->ClearInstances();
 }
 
 void AMaze::BeginPlay()

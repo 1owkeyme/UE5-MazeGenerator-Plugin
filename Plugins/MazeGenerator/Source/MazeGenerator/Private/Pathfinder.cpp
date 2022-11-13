@@ -34,7 +34,7 @@ TArray<TArray<uint8>> Pathfinder::FindPath(const TArray<TArray<uint8>>& Maze,
 			{
 				Graph[GraphVertex].Emplace(GraphVertex - Maze[Y].Num());
 			}
-			if (Y + 1 < Maze[Y].Num() && Maze[Y + 1][X]) // South direction.
+			if (Y + 1 < Maze.Num() && Maze[Y + 1][X]) // South direction.
 			{
 				Graph[GraphVertex].Emplace(GraphVertex + Maze[Y].Num());
 			}
@@ -67,8 +67,7 @@ TArray<TArray<uint8>> Pathfinder::FindPath(const TArray<TArray<uint8>>& Maze,
 	{
 		for (int32 i = 0; i < Graph[Vertex].Num(); ++i)
 		{
-			const int32 Adjacent = Graph[Vertex][i];
-			if (!Visited[Adjacent])
+			if (const int32 Adjacent = Graph[Vertex][i]; !Visited[Adjacent])
 			{
 				Visited[Adjacent] = true;
 				Vertices.Enqueue(Adjacent);
@@ -87,6 +86,7 @@ TArray<TArray<uint8>> Pathfinder::FindPath(const TArray<TArray<uint8>>& Maze,
 	{
 		GraphPath.Emplace(VertexNumber);
 	}
+
 	Algo::Reverse(GraphPath);
 
 	TArray<TArray<uint8>> MazePath;
@@ -99,10 +99,7 @@ TArray<TArray<uint8>> Pathfinder::FindPath(const TArray<TArray<uint8>>& Maze,
 	for (int32 VertexNumber, i = 0; i < GraphPath.Num(); ++i)
 	{
 		VertexNumber = GraphPath[i];
-		if (!VertexNumber)
-		{
-			continue;;
-		}
+
 		MazePath[VertexNumber / Maze[0].Num()][VertexNumber % Maze[0].Num()] = 1;
 	}
 

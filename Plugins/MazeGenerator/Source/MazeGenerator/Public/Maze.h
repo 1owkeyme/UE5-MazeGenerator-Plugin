@@ -27,7 +27,7 @@ enum class EGenerationAlgorithm : uint8
 };
 
 USTRUCT()
-struct FMazeSize
+struct FIntVector2D
 {
 	GENERATED_BODY()
 
@@ -37,7 +37,11 @@ struct FMazeSize
 	UPROPERTY(EditAnywhere, meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999))
 	int32 Y;
 
-	FMazeSize(): X(5), Y(5)
+	FIntVector2D(): X(0), Y(0)
+	{
+	}
+
+	explicit FIntVector2D(const int32 X, const int32 Y): X(X), Y(Y)
 	{
 	}
 
@@ -102,7 +106,7 @@ public:
 	EGenerationAlgorithm GenerationAlgorithm;
 
 	UPROPERTY(EditAnywhere, Category="Maze")
-	FMazeSize MazeSize;
+	FIntVector2D MazeSize = FIntVector2D(5, 5);
 
 	UPROPERTY(EditAnywhere, Category="Maze|Cells", meta=(NoResetToDefault))
 	FMazeCell FloorCell;
@@ -112,6 +116,18 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Maze|Cells")
 	FMazeCell OutlineWallCell;
+
+	UPROPERTY(EditAnywhere, Category="Maze|Cells", meta=(EditCondition="bEnablePathfinder"))
+	FMazeCell PathFloorCell;
+
+	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder")
+	bool bEnablePathfinder = true;
+
+	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder", meta=(NoSpinbox, EditCondition="bEnablePathfinder"))
+	FIntVector2D Start = FIntVector2D(0, 0);
+
+	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder", meta=(NoSpinbox, EditCondition="bEnablePathfinder"))
+	FIntVector2D End = FIntVector2D(0, 0);
 
 private:
 	TMap<EGenerationAlgorithm, TSharedPtr<Algorithm>> GenerationAlgorithms;
@@ -124,7 +140,10 @@ private:
 
 	UPROPERTY()
 	UHierarchicalInstancedStaticMeshComponent* OutlineWallCells;
-
+	
+	UPROPERTY()
+	UHierarchicalInstancedStaticMeshComponent* PathFloorCells;
+	
 	void GenerateMaze();
 
 	void GenerateMazeOutline();
