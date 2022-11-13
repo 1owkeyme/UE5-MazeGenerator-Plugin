@@ -3,6 +3,7 @@
 
 #include "Maze.h"
 
+
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 
 #include "Algorithms/Algorithm.h"
@@ -13,18 +14,19 @@
 #include "Algorithms/Kruskal.h"
 #include "Algorithms/Prim.h"
 #include "Algorithms/Sidewinder.h"
+#include "Pathfinder.h"
 
 AMaze::AMaze()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	GenerationAlgorithms.Add(EGenerationAlgorithm::Kruskal, TSharedPtr<Algorithm>(new Kruskal));
-	GenerationAlgorithms.Add(EGenerationAlgorithm::Prim, TSharedPtr<Algorithm>(new Prim));
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Backtracker, TSharedPtr<Algorithm>(new Backtracker));
-	GenerationAlgorithms.Add(EGenerationAlgorithm::Eller, TSharedPtr<Algorithm>(new Eller));
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Division, TSharedPtr<Algorithm>(new Division));
 	GenerationAlgorithms.Add(EGenerationAlgorithm::HaK, TSharedPtr<Algorithm>(new HaK));
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Sidewinder, TSharedPtr<Algorithm>(new Sidewinder));
+	GenerationAlgorithms.Add(EGenerationAlgorithm::Kruskal, TSharedPtr<Algorithm>(new Kruskal));
+	GenerationAlgorithms.Add(EGenerationAlgorithm::Eller, TSharedPtr<Algorithm>(new Eller));
+	GenerationAlgorithms.Add(EGenerationAlgorithm::Prim, TSharedPtr<Algorithm>(new Prim));
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
@@ -96,6 +98,9 @@ void AMaze::GenerateMaze()
 			}
 		}
 	}
+
+	Pathfinder* MazeSolver = new Pathfinder;
+	MazeSolver->FindPath(Grid, TPair<int32, int32>(0, 0), TPair<int32, int32>(MazeSize.X, MazeSize.Y));
 }
 
 void AMaze::GenerateMazeOutline()

@@ -17,13 +17,13 @@ class UHierarchicalInstancedStaticMeshComponent;
 UENUM(BlueprintType)
 enum class EGenerationAlgorithm : uint8
 {
-	Kruskal,
-	Prim,
 	Backtracker UMETA(DisplayName="Recursive Backtracker"),
-	Eller,
 	Division UMETA(DisplayName="Recursive Division"),
 	HaK UMETA(DisplayName="Hunt-and-Kill"),
-	Sidewinder
+	Sidewinder,
+	Kruskal,
+	Eller,
+	Prim
 };
 
 USTRUCT()
