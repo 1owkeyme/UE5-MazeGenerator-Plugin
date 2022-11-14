@@ -67,7 +67,7 @@ AMaze::AMaze()
 	}
 }
 
-void AMaze::GenerateMaze(const bool bShouldUpdate)
+void AMaze::GenerateMaze(const bool bShouldUpdateMaze)
 {
 	ClearMaze();
 
@@ -78,26 +78,27 @@ void AMaze::GenerateMaze(const bool bShouldUpdate)
 	}
 
 	FloorCells->SetStaticMesh(FloorCell.StaticMesh);
-	FloorCell.CalculateSize();
-
 	WallCells->SetStaticMesh(WallCell.StaticMesh);
-	WallCell.CalculateSize();
 
-	if (OutlineWallCell && bCreateOutline)
+	MazeCellSize = FloorCell.GetSize() > WallCell.GetSize() ? FloorCell.GetSize() : WallCell.GetSize();
+
+	if (OutlineWallCell)
 	{
 		OutlineWallCells->SetStaticMesh(OutlineWallCell.StaticMesh);
-		OutlineWallCell.CalculateSize();
-
+		if (const FVector2D CellSize = OutlineWallCell.GetSize(); CellSize > MazeCellSize)
+		{
+			MazeCellSize = CellSize;
+		}
+		
 		GenerateMazeOutline();
 	}
 
 	if (PathFloorCell)
 	{
 		PathFloorCells->SetStaticMesh(PathFloorCell.StaticMesh);
-		PathFloorCell.CalculateSize();
 	}
 
-	if (bShouldUpdate)
+	if (bShouldUpdateMaze)
 	{
 		MazeGrid = GenerationAlgorithms[GenerationAlgorithm]->GetGrid(FIntVector2(MazeSize), Seed);
 		if (bEnablePathfinder)
@@ -107,60 +108,51 @@ void AMaze::GenerateMaze(const bool bShouldUpdate)
 			MazePathGrid = Pathfinder::FindPath(MazeGrid,
 			                                    TPair<int32, int32>(PathStart),
 			                                    TPair<int32, int32>(PathEnd));
-			if (!MazePathGrid.Num())
-			{
-				UE_LOG(LogTemp, Warning,
-				       TEXT("To create path make sure Start and End are not walls and in bounds of Maze Size."));
-			}
 		}
 	}
 
-
-	const FVector2D FloorSize = FloorCell.GetSize();
-	const FVector2D PathFloorSize = PathFloorCell.GetSize();
-	const FVector2D WallSize = WallCell.GetSize();
 	for (int32 Y = 0; Y < MazeSize.Y; ++Y)
 	{
 		for (int32 X = 0; X < MazeSize.X; ++X)
 		{
 			if (bEnablePathfinder && MazePathGrid.Num() > 0 && MazePathGrid[Y][X])
 			{
-				const FVector Location(PathFloorSize.X * X, PathFloorSize.Y * Y, 0.f);
+				const FVector Location(MazeCellSize.X * X, MazeCellSize.Y * Y, 0.f);
 				PathFloorCells->AddInstance(FTransform(Location));
 			}
 			else if (MazeGrid[Y][X])
 			{
-				const FVector Location(FloorSize.X * X, FloorSize.Y * Y, 0.f);
+				const FVector Location(MazeCellSize.X * X, MazeCellSize.Y * Y, 0.f);
 				FloorCells->AddInstance(FTransform(Location));
 			}
 			else
 			{
-				const FVector Location(WallSize.X * X, WallSize.Y * Y, 0.f);
+				const FVector Location(MazeCellSize.X * X, MazeCellSize.Y * Y, 0.f);
 				WallCells->AddInstance(FTransform(Location));
 			}
 		}
 	}
 }
 
-void AMaze::GenerateMazeOutline()
+void AMaze::GenerateMazeOutline() const
 {
 	FVector Location1;
 	FVector Location2;
 
-	Location1.Y = -WallCell.GetSize().Y;
-	Location2.Y = WallCell.GetSize().Y * MazeSize.Y;
+	Location1.Y = -MazeCellSize.Y;
+	Location2.Y = MazeCellSize.Y * MazeSize.Y;
 	for (int32 X = -1; X < MazeSize.X + 1; ++X)
 	{
-		Location1.X = Location2.X = X * WallCell.GetSize().X;
+		Location1.X = Location2.X = X * MazeCellSize.X;
 		OutlineWallCells->AddInstance(FTransform(Location1));
 		OutlineWallCells->AddInstance(FTransform(Location2));
 	}
 
-	Location1.X = -WallCell.GetSize().X;
-	Location2.X = WallCell.GetSize().X * MazeSize.X;
+	Location1.X = -MazeCellSize.X;
+	Location2.X = MazeCellSize.X * MazeSize.X;
 	for (int32 Y = 0; Y < MazeSize.Y; ++Y)
 	{
-		Location1.Y = Location2.Y = Y * WallCell.GetSize().Y;
+		Location1.Y = Location2.Y = Y * MazeCellSize.Y;
 		OutlineWallCells->AddInstance(FTransform(Location1));
 		OutlineWallCells->AddInstance(FTransform(Location2));
 	}
@@ -188,14 +180,16 @@ void AMaze::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	const bool bShouldUpdate = Transform.Equals(LastMazeTransform) || !MazeGrid.Num();
+
 	if (bGenerateInEditor)
 	{
+		const bool bShouldUpdate = Transform.Equals(LastMazeTransform) || !MazeGrid.Num();
 		GenerateMaze(bShouldUpdate);
 	}
 	else
 	{
 		ClearMaze();
 	}
+
 	LastMazeTransform = Transform;
 }

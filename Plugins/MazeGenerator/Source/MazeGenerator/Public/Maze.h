@@ -75,21 +75,13 @@ struct FMazeCell
 	UPROPERTY(EditAnywhere, meta=(NoResetToDefault))
 	UStaticMesh* StaticMesh;
 
-	void CalculateSize()
+	FVector2D GetSize()
 	{
 		if (StaticMesh)
 		{
 			const FVector StaticMeshSize = StaticMesh->GetBoundingBox().GetSize();
 			Size.X = StaticMeshSize.X;
 			Size.Y = StaticMeshSize.Y;
-		}
-	}
-
-	FVector2D GetSize()
-	{
-		if (Size.IsZero())
-		{
-			CalculateSize();
 		}
 		return Size;
 	}
@@ -129,17 +121,17 @@ public:
 	UPROPERTY(EditAnywhere, Category="Maze", meta=(DisplayPriority=2))
 	FMazeSize MazeSize;
 
-	UPROPERTY(EditAnywhere, Category="Maze", meta=(NoResetToDefault))
+	UPROPERTY(EditAnywhere, DisplayName="Floor", Category="Maze|Cells", meta=(NoResetToDefault, DisplayPriority=0))
 	FMazeCell FloorCell;
 
-	UPROPERTY(EditAnywhere, Category="Maze", meta=(NoResetToDefault))
+	UPROPERTY(EditAnywhere, DisplayName="Wall", Category="Maze|Cells", meta=(NoResetToDefault, DisplayPriority=1))
 	FMazeCell WallCell;
 
-	UPROPERTY(EditAnywhere, Category="Maze|Outline")
-	bool bCreateOutline = true;
-
-	UPROPERTY(EditAnywhere, Category="Maze|Outline", meta=(EditCondition="bCreateOutline", EditConditionHides))
+	UPROPERTY(EditAnywhere, DisplayName="OutlineWall", Category="Maze|Cells", meta=(DisplayPriority=2))
 	FMazeCell OutlineWallCell;
+
+	UPROPERTY(VisibleAnywhere, Category="Maze|Cells")
+	FVector2D MazeCellSize;
 
 	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder")
 	bool bEnablePathfinder = true;
@@ -152,7 +144,7 @@ public:
 		meta=(EditCondition="bEnablePathfinder", EditConditionHides))
 	FMazeCoordinates PathEnd;
 
-	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder",
+	UPROPERTY(EditAnywhere, DisplayName="PathFloor", Category="Maze|Pathfinder",
 		meta=(EditCondition="bEnablePathfinder", EditConditionHides, NoResetToDefault))
 	FMazeCell PathFloorCell;
 
@@ -180,7 +172,7 @@ private:
 
 	void GenerateMaze(const bool bShouldUpdateMaze = true);
 
-	void GenerateMazeOutline();
+	void GenerateMazeOutline() const;
 
 	void ClearMaze() const;
 
@@ -189,7 +181,4 @@ protected:
 
 public:
 	virtual void OnConstruction(const FTransform& Transform) override;
-
-private:
-	virtual ~AMaze() override = default;
 };
