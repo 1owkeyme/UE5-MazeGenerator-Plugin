@@ -8,44 +8,64 @@
 
 #include "Maze.generated.h"
 
-class Algorithm;
-class UHierarchicalInstancedStaticMeshComponent;
-
-#define MAZE_MIN_SIZE 3
-#define MAZE_MAX_SIZE 100
-
 UENUM(BlueprintType)
 enum class EGenerationAlgorithm : uint8
 {
-	Kruskal,
-	Prim,
 	Backtracker UMETA(DisplayName="Recursive Backtracker"),
-	Eller,
 	Division UMETA(DisplayName="Recursive Division"),
 	HaK UMETA(DisplayName="Hunt-and-Kill"),
-	Sidewinder
+	Sidewinder,
+	Kruskal,
+	Eller,
+	Prim
 };
+
 
 USTRUCT()
 struct FMazeSize
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999))
+	UPROPERTY(EditAnywhere, meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999, NoResetToDefault))
 	int32 X;
 
-	UPROPERTY(EditAnywhere, meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999))
+	UPROPERTY(EditAnywhere, meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999, NoResetToDefault))
 	int32 Y;
 
 	FMazeSize(): X(5), Y(5)
 	{
 	}
 
-	explicit operator const FIntVector2() const
+	explicit operator FIntVector2() const
 	{
 		return FIntVector2(X, Y);
 	}
 };
+
+
+USTRUCT()
+struct FMazeCoordinates
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, meta=(ClampMin=0, Delta=1, NoResetToDefault))
+	int32 X;
+
+	UPROPERTY(EditAnywhere, meta=(ClampMin=0, Delta=1, NoResetToDefault))
+	int32 Y;
+
+	FMazeCoordinates(): X(0), Y(0)
+	{
+	}
+
+	void ClampByMazeSize(const FMazeSize& MazeSize);
+
+	explicit operator TPair<int32, int32>() const
+	{
+		return TPair<int32, int32>(X, Y);
+	}
+};
+
 
 USTRUCT()
 struct FMazeCell
@@ -84,6 +104,11 @@ public:
 	}
 };
 
+
+class Algorithm;
+class Pathfinder;
+class UHierarchicalInstancedStaticMeshComponent;
+
 UCLASS()
 class MAZEGENERATOR_API AMaze : public AActor
 {
@@ -92,28 +117,52 @@ class MAZEGENERATOR_API AMaze : public AActor
 public:
 	AMaze();
 
-	UPROPERTY(EditAnywhere, Category="Maze")
+	UPROPERTY(EditAnywhere, AdvancedDisplay, Category="Maze")
 	bool bGenerateInEditor = true;
 
-	UPROPERTY(EditAnywhere, Category="Maze")
-	uint64 Seed = 0;
-
-	UPROPERTY(EditAnywhere, Category="Maze", meta=(NoResetToDefault))
+	UPROPERTY(EditAnywhere, Category="Maze", meta=(NoResetToDefault, DisplayPriority=0))
 	EGenerationAlgorithm GenerationAlgorithm;
 
-	UPROPERTY(EditAnywhere, Category="Maze")
+	UPROPERTY(EditAnywhere, Category="Maze", meta=(DisplayPriority=1))
+	uint64 Seed = 0;
+
+	UPROPERTY(EditAnywhere, Category="Maze", meta=(DisplayPriority=2))
 	FMazeSize MazeSize;
 
-	UPROPERTY(EditAnywhere, Category="Maze|Cells", meta=(NoResetToDefault))
+	UPROPERTY(EditAnywhere, Category="Maze", meta=(NoResetToDefault))
 	FMazeCell FloorCell;
 
-	UPROPERTY(EditAnywhere, Category="Maze|Cells", meta=(NoResetToDefault))
+	UPROPERTY(EditAnywhere, Category="Maze", meta=(NoResetToDefault))
 	FMazeCell WallCell;
 
-	UPROPERTY(EditAnywhere, Category="Maze|Cells")
+	UPROPERTY(EditAnywhere, Category="Maze|Outline")
+	bool bCreateOutline = true;
+
+	UPROPERTY(EditAnywhere, Category="Maze|Outline", meta=(EditCondition="bCreateOutline", EditConditionHides))
 	FMazeCell OutlineWallCell;
 
+	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder")
+	bool bEnablePathfinder = true;
+
+	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder",
+		meta=(EditCondition="bEnablePathfinder", EditConditionHides))
+	FMazeCoordinates PathStart;
+
+	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder",
+		meta=(EditCondition="bEnablePathfinder", EditConditionHides))
+	FMazeCoordinates PathEnd;
+
+	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder",
+		meta=(EditCondition="bEnablePathfinder", EditConditionHides, NoResetToDefault))
+	FMazeCell PathFloorCell;
+
+
+	TArray<TArray<uint8>> MazeGrid;
+
+	TArray<TArray<uint8>> MazePathGrid;
 private:
+	FTransform LastMazeTransform;
+
 	TMap<EGenerationAlgorithm, TSharedPtr<Algorithm>> GenerationAlgorithms;
 
 	UPROPERTY()
@@ -125,7 +174,11 @@ private:
 	UPROPERTY()
 	UHierarchicalInstancedStaticMeshComponent* OutlineWallCells;
 
-	void GenerateMaze();
+	UPROPERTY()
+	UHierarchicalInstancedStaticMeshComponent* PathFloorCells;
+
+
+	void GenerateMaze(const bool bShouldUpdateMaze = true);
 
 	void GenerateMazeOutline();
 
@@ -134,10 +187,7 @@ private:
 protected:
 	virtual void BeginPlay() override;
 
-
 public:
-	virtual void Tick(float DeltaTime) override;
-
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 private:

@@ -3,6 +3,7 @@
 
 #include "Maze.h"
 
+
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 
 #include "Algorithms/Algorithm.h"
@@ -13,18 +14,31 @@
 #include "Algorithms/Kruskal.h"
 #include "Algorithms/Prim.h"
 #include "Algorithms/Sidewinder.h"
+#include "Pathfinder.h"
+
+void FMazeCoordinates::ClampByMazeSize(const FMazeSize& MazeSize)
+{
+	if (X >= MazeSize.X)
+	{
+		X = MazeSize.X - 1;
+	}
+	if (Y >= MazeSize.Y)
+	{
+		Y = MazeSize.Y - 1;
+	}
+}
 
 AMaze::AMaze()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	GenerationAlgorithms.Add(EGenerationAlgorithm::Kruskal, TSharedPtr<Algorithm>(new Kruskal));
-	GenerationAlgorithms.Add(EGenerationAlgorithm::Prim, TSharedPtr<Algorithm>(new Prim));
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Backtracker, TSharedPtr<Algorithm>(new Backtracker));
-	GenerationAlgorithms.Add(EGenerationAlgorithm::Eller, TSharedPtr<Algorithm>(new Eller));
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Division, TSharedPtr<Algorithm>(new Division));
 	GenerationAlgorithms.Add(EGenerationAlgorithm::HaK, TSharedPtr<Algorithm>(new HaK));
 	GenerationAlgorithms.Add(EGenerationAlgorithm::Sidewinder, TSharedPtr<Algorithm>(new Sidewinder));
+	GenerationAlgorithms.Add(EGenerationAlgorithm::Kruskal, TSharedPtr<Algorithm>(new Kruskal));
+	GenerationAlgorithms.Add(EGenerationAlgorithm::Eller, TSharedPtr<Algorithm>(new Eller));
+	GenerationAlgorithms.Add(EGenerationAlgorithm::Prim, TSharedPtr<Algorithm>(new Prim));
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 
@@ -32,30 +46,30 @@ AMaze::AMaze()
 	if (FloorCells)
 	{
 		FloorCells->SetupAttachment(GetRootComponent());
-		FloorCells->SetStaticMesh(FloorCell.StaticMesh);
+	}
+
+	PathFloorCells = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(TEXT("PathFloorCells"));
+	if (PathFloorCells)
+	{
+		PathFloorCells->SetupAttachment(GetRootComponent());
 	}
 
 	WallCells = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(TEXT("WallCells"));
 	if (WallCells)
 	{
 		WallCells->SetupAttachment(GetRootComponent());
-		WallCells->SetStaticMesh(WallCell.StaticMesh);
 	}
 
 	OutlineWallCells = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(TEXT("OutlineWallCells"));
 	if (OutlineWallCells)
 	{
 		OutlineWallCells->SetupAttachment(GetRootComponent());
-		OutlineWallCells->SetStaticMesh(OutlineWallCell.StaticMesh);
 	}
 }
 
-void AMaze::GenerateMaze()
+void AMaze::GenerateMaze(const bool bShouldUpdate)
 {
 	ClearMaze();
-
-	FloorCell.CalculateSize();
-	WallCell.CalculateSize();
 
 	if (!(FloorCell && WallCell))
 	{
@@ -64,27 +78,57 @@ void AMaze::GenerateMaze()
 	}
 
 	FloorCells->SetStaticMesh(FloorCell.StaticMesh);
+	FloorCell.CalculateSize();
+
 	WallCells->SetStaticMesh(WallCell.StaticMesh);
+	WallCell.CalculateSize();
 
-
-	if (OutlineWallCell)
+	if (OutlineWallCell && bCreateOutline)
 	{
 		OutlineWallCells->SetStaticMesh(OutlineWallCell.StaticMesh);
+		OutlineWallCell.CalculateSize();
+
 		GenerateMazeOutline();
 	}
 
+	if (PathFloorCell)
+	{
+		PathFloorCells->SetStaticMesh(PathFloorCell.StaticMesh);
+		PathFloorCell.CalculateSize();
+	}
 
-	const TSharedPtr<Algorithm> ChosenAlgorithm = GenerationAlgorithms[GenerationAlgorithm];
+	if (bShouldUpdate)
+	{
+		MazeGrid = GenerationAlgorithms[GenerationAlgorithm]->GetGrid(FIntVector2(MazeSize), Seed);
+		if (bEnablePathfinder)
+		{
+			PathStart.ClampByMazeSize(MazeSize);
+			PathEnd.ClampByMazeSize(MazeSize);
+			MazePathGrid = Pathfinder::FindPath(MazeGrid,
+			                                    TPair<int32, int32>(PathStart),
+			                                    TPair<int32, int32>(PathEnd));
+			if (!MazePathGrid.Num())
+			{
+				UE_LOG(LogTemp, Warning,
+				       TEXT("To create path make sure Start and End are not walls and in bounds of Maze Size."));
+			}
+		}
+	}
 
-	const TArray<TArray<uint8>> Grid = ChosenAlgorithm->GetGrid(FIntVector2(MazeSize), Seed);
 
 	const FVector2D FloorSize = FloorCell.GetSize();
+	const FVector2D PathFloorSize = PathFloorCell.GetSize();
 	const FVector2D WallSize = WallCell.GetSize();
 	for (int32 Y = 0; Y < MazeSize.Y; ++Y)
 	{
 		for (int32 X = 0; X < MazeSize.X; ++X)
 		{
-			if (Grid[Y][X])
+			if (bEnablePathfinder && MazePathGrid.Num() > 0 && MazePathGrid[Y][X])
+			{
+				const FVector Location(PathFloorSize.X * X, PathFloorSize.Y * Y, 0.f);
+				PathFloorCells->AddInstance(FTransform(Location));
+			}
+			else if (MazeGrid[Y][X])
 			{
 				const FVector Location(FloorSize.X * X, FloorSize.Y * Y, 0.f);
 				FloorCells->AddInstance(FTransform(Location));
@@ -127,6 +171,7 @@ void AMaze::ClearMaze() const
 	FloorCells->ClearInstances();
 	WallCells->ClearInstances();
 	OutlineWallCells->ClearInstances();
+	PathFloorCells->ClearInstances();
 }
 
 void AMaze::BeginPlay()
@@ -139,21 +184,18 @@ void AMaze::BeginPlay()
 	}
 }
 
-void AMaze::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
 void AMaze::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
+	const bool bShouldUpdate = Transform.Equals(LastMazeTransform) || !MazeGrid.Num();
 	if (bGenerateInEditor)
 	{
-		GenerateMaze();
+		GenerateMaze(bShouldUpdate);
 	}
 	else
 	{
 		ClearMaze();
 	}
+	LastMazeTransform = Transform;
 }
