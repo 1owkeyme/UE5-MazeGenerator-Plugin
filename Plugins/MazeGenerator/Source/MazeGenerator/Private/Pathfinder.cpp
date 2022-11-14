@@ -7,6 +7,7 @@ TArray<TArray<uint8>> Pathfinder::FindPath(const TArray<TArray<uint8>>& Maze,
 	TArray<TArray<int32>> Graph;
 	Graph.Reserve(Maze.Num() * Maze[0].Num());
 
+	// Graph creation.
 	for (int32 GraphVertex,
 	           Y = 0; Y < Maze.Num(); ++Y)
 	{
@@ -42,6 +43,7 @@ TArray<TArray<uint8>> Pathfinder::FindPath(const TArray<TArray<uint8>>& Maze,
 			Graph[GraphVertex].Shrink();
 		}
 	}
+
 	const int32 StartVertex = Start.Value * Maze[0].Num() + Start.Key;
 	const int32 EndVertex = End.Value * Maze[0].Num() + End.Key;
 
@@ -62,7 +64,6 @@ TArray<TArray<uint8>> Pathfinder::FindPath(const TArray<TArray<uint8>>& Maze,
 	int32 Vertex;
 	Vertices.Enqueue(StartVertex);
 	Visited[StartVertex] = true;
-	Parents[StartVertex] = -1;
 	while (Vertices.Dequeue(Vertex))
 	{
 		for (int32 i = 0; i < Graph[Vertex].Num(); ++i)
@@ -76,9 +77,11 @@ TArray<TArray<uint8>> Pathfinder::FindPath(const TArray<TArray<uint8>>& Maze,
 			}
 		}
 	}
+
 	TArray<int32> GraphPath;
 	if (!Visited[EndVertex])
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Path is not reachable."));
 		return TArray<TArray<uint8>>();
 	}
 
