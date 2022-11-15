@@ -88,7 +88,7 @@ void AMaze::UpdateMaze()
 		{
 			MazeCellSize = CellSize;
 		}
-		GenerateMazeOutline();
+		CreateMazeOutline();
 	}
 	if (PathFloorCell)
 	{
@@ -125,7 +125,7 @@ void AMaze::UpdateMaze()
 	}
 }
 
-void AMaze::GenerateMazeOutline() const
+void AMaze::CreateMazeOutline() const
 {
 	FVector Location1;
 	FVector Location2;
@@ -263,6 +263,25 @@ void AMaze::ClearMaze() const
 	WallCells->ClearInstances();
 	OutlineWallCells->ClearInstances();
 	PathFloorCells->ClearInstances();
+}
+
+void AMaze::Randomize()
+{
+	MazeSize.X = FMath::RandRange(3, 101) | 1; // | 1 to make odd.
+	MazeSize.Y = FMath::RandRange(3, 101) | 1;
+
+	TArray<EGenerationAlgorithm> Algorithms;
+	const int32 Num = GenerationAlgorithms.GetKeys(Algorithms);
+	GenerationAlgorithm = Algorithms[FMath::RandRange(0, Num - 1)];
+
+	Seed = FMath::RandRange(0, MAX_int32 - 1);
+
+	PathStart.X = 0;
+	PathStart.X = 0;
+	PathEnd.X = MazeSize.X - 1;
+	PathEnd.Y = MazeSize.Y - 1;
+
+	UpdateMaze();
 }
 
 void AMaze::BeginPlay()

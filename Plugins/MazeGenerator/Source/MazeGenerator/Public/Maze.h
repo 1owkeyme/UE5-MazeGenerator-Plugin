@@ -193,12 +193,14 @@ private:
 
 	void UpdateMaze();
 
-	void GenerateMazeOutline() const;
+	void CreateMazeOutline() const;
 
 	FMazePath GetMazePath(const FMazeCoordinates& Start, const FMazeCoordinates& End);
 
 	void ClearMaze() const;
 
+	UFUNCTION(CallInEditor, Category="Maze", meta=(DisplayPriority=0))
+	void Randomize();
 
 protected:
 	virtual void BeginPlay() override;
