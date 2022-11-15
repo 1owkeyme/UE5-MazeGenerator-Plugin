@@ -36,12 +36,11 @@ struct FMazeSize
 	{
 	}
 
-	explicit operator FIntVector2() const
+	operator FIntVector2() const
 	{
 		return FIntVector2(X, Y);
 	}
 };
-
 
 USTRUCT()
 struct FMazeCoordinates
@@ -60,12 +59,21 @@ struct FMazeCoordinates
 
 	void ClampByMazeSize(const FMazeSize& MazeSize);
 
-	explicit operator TPair<int32, int32>() const
+	bool operator==(const FMazeCoordinates& Other) const
+	{
+		return X == Other.X && Y == Other.Y;
+	}
+
+	bool operator!=(const FMazeCoordinates& Other) const
+	{
+		return !(*this == Other);
+	}
+
+	operator TPair<int32, int32>() const
 	{
 		return TPair<int32, int32>(X, Y);
 	}
 };
-
 
 USTRUCT()
 struct FMazeCell
@@ -96,9 +104,22 @@ public:
 	}
 };
 
+USTRUCT()
+struct FMazePath
+{
+	GENERATED_BODY()
+
+	TArray<TArray<uint8>> Grid;
+
+	UPROPERTY(VisibleAnywhere)
+	int32 Length;
+
+	FMazePath(): Length(0)
+	{
+	}
+};
 
 class Algorithm;
-class Pathfinder;
 class UHierarchicalInstancedStaticMeshComponent;
 
 UCLASS()
@@ -109,9 +130,6 @@ class MAZEGENERATOR_API AMaze : public AActor
 public:
 	AMaze();
 
-	UPROPERTY(EditAnywhere, AdvancedDisplay, Category="Maze")
-	bool bGenerateInEditor = true;
-
 	UPROPERTY(EditAnywhere, Category="Maze", meta=(NoResetToDefault, DisplayPriority=0))
 	EGenerationAlgorithm GenerationAlgorithm;
 
@@ -121,39 +139,43 @@ public:
 	UPROPERTY(EditAnywhere, Category="Maze", meta=(DisplayPriority=2))
 	FMazeSize MazeSize;
 
+	TArray<TArray<uint8>> MazeGrid;
+
 	UPROPERTY(EditAnywhere, DisplayName="Floor", Category="Maze|Cells", meta=(NoResetToDefault, DisplayPriority=0))
 	FMazeCell FloorCell;
 
 	UPROPERTY(EditAnywhere, DisplayName="Wall", Category="Maze|Cells", meta=(NoResetToDefault, DisplayPriority=1))
 	FMazeCell WallCell;
 
-	UPROPERTY(EditAnywhere, DisplayName="OutlineWall", Category="Maze|Cells", meta=(DisplayPriority=2))
+	UPROPERTY(EditAnywhere, DisplayName="Outline Wall", Category="Maze|Cells", meta=(DisplayPriority=2))
 	FMazeCell OutlineWallCell;
 
 	UPROPERTY(VisibleAnywhere, Category="Maze|Cells")
 	FVector2D MazeCellSize;
 
 	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder")
-	bool bEnablePathfinder = true;
+	bool bShowPath = true;
 
 	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder",
-		meta=(EditCondition="bEnablePathfinder", EditConditionHides))
+		meta=(EditCondition="bShowPath", EditConditionHides))
 	FMazeCoordinates PathStart;
 
 	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder",
-		meta=(EditCondition="bEnablePathfinder", EditConditionHides))
+		meta=(EditCondition="bShowPath", EditConditionHides))
 	FMazeCoordinates PathEnd;
 
-	UPROPERTY(EditAnywhere, DisplayName="PathFloor", Category="Maze|Pathfinder",
-		meta=(EditCondition="bEnablePathfinder", EditConditionHides, NoResetToDefault))
+	UPROPERTY(EditAnywhere, DisplayName="Path Floor", Category="Maze|Pathfinder",
+		meta=(EditCondition="bShowPath", EditConditionHides, NoResetToDefault))
 	FMazeCell PathFloorCell;
 
+	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder",
+		meta=(EditCondition="bShowPath", EditConditionHides, ShowOnlyInnerProperties))
+	FMazePath MazePath;
 
-	TArray<TArray<uint8>> MazeGrid;
-
-	TArray<TArray<uint8>> MazePathGrid;
 private:
+#if WITH_EDITOR
 	FTransform LastMazeTransform;
+#endif
 
 	TMap<EGenerationAlgorithm, TSharedPtr<Algorithm>> GenerationAlgorithms;
 
@@ -169,16 +191,19 @@ private:
 	UPROPERTY()
 	UHierarchicalInstancedStaticMeshComponent* PathFloorCells;
 
-
-	void GenerateMaze(const bool bShouldUpdateMaze = true);
+	void UpdateMaze();
 
 	void GenerateMazeOutline() const;
 
+	FMazePath GetMazePath(const FMazeCoordinates& Start, const FMazeCoordinates& End);
+
 	void ClearMaze() const;
+
 
 protected:
 	virtual void BeginPlay() override;
 
 public:
+	// Remember: this method is being called before BeginPlay. 
 	virtual void OnConstruction(const FTransform& Transform) override;
 };

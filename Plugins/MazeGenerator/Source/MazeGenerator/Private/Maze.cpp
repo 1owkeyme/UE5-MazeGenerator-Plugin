@@ -14,7 +14,6 @@
 #include "Algorithms/Kruskal.h"
 #include "Algorithms/Prim.h"
 #include "Algorithms/Sidewinder.h"
-#include "Pathfinder.h"
 
 void FMazeCoordinates::ClampByMazeSize(const FMazeSize& MazeSize)
 {
@@ -67,7 +66,7 @@ AMaze::AMaze()
 	}
 }
 
-void AMaze::GenerateMaze(const bool bShouldUpdateMaze)
+void AMaze::UpdateMaze()
 {
 	ClearMaze();
 
@@ -89,33 +88,25 @@ void AMaze::GenerateMaze(const bool bShouldUpdateMaze)
 		{
 			MazeCellSize = CellSize;
 		}
-		
 		GenerateMazeOutline();
 	}
-
 	if (PathFloorCell)
 	{
 		PathFloorCells->SetStaticMesh(PathFloorCell.StaticMesh);
 	}
 
-	if (bShouldUpdateMaze)
-	{
-		MazeGrid = GenerationAlgorithms[GenerationAlgorithm]->GetGrid(FIntVector2(MazeSize), Seed);
-		if (bEnablePathfinder)
-		{
-			PathStart.ClampByMazeSize(MazeSize);
-			PathEnd.ClampByMazeSize(MazeSize);
-			MazePathGrid = Pathfinder::FindPath(MazeGrid,
-			                                    TPair<int32, int32>(PathStart),
-			                                    TPair<int32, int32>(PathEnd));
-		}
-	}
+	MazeGrid = GenerationAlgorithms[GenerationAlgorithm]->GetGrid(MazeSize, Seed);
+
+	PathStart.ClampByMazeSize(MazeSize);
+	PathEnd.ClampByMazeSize(MazeSize);
+	MazePath = GetMazePath(PathStart, PathEnd);
+
 
 	for (int32 Y = 0; Y < MazeSize.Y; ++Y)
 	{
 		for (int32 X = 0; X < MazeSize.X; ++X)
 		{
-			if (bEnablePathfinder && MazePathGrid.Num() > 0 && MazePathGrid[Y][X])
+			if (bShowPath && MazePath.Grid.Num() > 0 && MazePath.Grid[Y][X])
 			{
 				const FVector Location(MazeCellSize.X * X, MazeCellSize.Y * Y, 0.f);
 				PathFloorCells->AddInstance(FTransform(Location));
@@ -158,6 +149,114 @@ void AMaze::GenerateMazeOutline() const
 	}
 }
 
+FMazePath AMaze::GetMazePath(const FMazeCoordinates& Start, const FMazeCoordinates& End)
+{
+	TArray<TArray<int32>> Graph;
+	Graph.Reserve(MazeGrid.Num() * MazeGrid[0].Num());
+
+	// Graph creation.
+	for (int32 GraphVertex,
+	           Y = 0; Y < MazeGrid.Num(); ++Y)
+	{
+		for (int32 X = 0; X < MazeGrid[Y].Num(); ++X)
+		{
+			GraphVertex = Y * MazeGrid[Y].Num() + X;
+
+			Graph.Emplace(TArray<int32>());
+			if (!MazeGrid[Y][X])
+			{
+				continue;
+			}
+
+			Graph[GraphVertex].Reserve(4); // There are only 4 directions possible.
+
+			if (X > 0 && MazeGrid[Y][X - 1]) // West direction.
+			{
+				Graph[GraphVertex].Emplace(GraphVertex - 1);
+			}
+			if (X + 1 < MazeGrid[Y].Num() && MazeGrid[Y][X + 1]) // East direction.
+			{
+				Graph[GraphVertex].Emplace(GraphVertex + 1);
+			}
+			if (Y > 0 && MazeGrid[Y - 1][X]) // North direction.
+			{
+				Graph[GraphVertex].Emplace(GraphVertex - MazeGrid[Y].Num());
+			}
+			if (Y + 1 < MazeGrid.Num() && MazeGrid[Y + 1][X]) // South direction.
+			{
+				Graph[GraphVertex].Emplace(GraphVertex + MazeGrid[Y].Num());
+			}
+
+			Graph[GraphVertex].Shrink();
+		}
+	}
+
+	const int32 StartVertex = Start.Y * MazeGrid[0].Num() + Start.X;
+	const int32 EndVertex = End.Y * MazeGrid[0].Num() + End.X;
+
+
+	TQueue<int32> Vertices;
+
+	const int32 VerticesAmount = MazeGrid.Num() * MazeGrid[0].Num();
+
+	TArray<bool> Visited;
+	Visited.Init(false, VerticesAmount);
+
+	TArray<int32> Parents;
+	Parents.Init(-1, VerticesAmount);
+
+	TArray<int32> Distances;
+	Distances.Init(0, VerticesAmount);
+
+	int32 Vertex;
+	Vertices.Enqueue(StartVertex);
+	Visited[StartVertex] = true;
+	while (Vertices.Dequeue(Vertex))
+	{
+		for (int32 i = 0; i < Graph[Vertex].Num(); ++i)
+		{
+			if (const int32 Adjacent = Graph[Vertex][i]; !Visited[Adjacent])
+			{
+				Visited[Adjacent] = true;
+				Vertices.Enqueue(Adjacent);
+				Distances[Adjacent] = Distances[Vertex] + 1;
+				Parents[Adjacent] = Vertex;
+			}
+		}
+	}
+
+	TArray<int32> GraphPath;
+	if (!Visited[EndVertex])
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Path is not reachable."));
+		return FMazePath();
+	}
+
+	for (int VertexNumber = EndVertex; VertexNumber != -1; VertexNumber = Parents[VertexNumber])
+	{
+		GraphPath.Emplace(VertexNumber);
+	}
+
+	Algo::Reverse(GraphPath);
+
+	FMazePath Path;
+	Path.Grid.Init(TArray<uint8>(), MazeGrid.Num());
+	for (int Y = 0; Y < MazeGrid.Num(); ++Y)
+	{
+		Path.Grid[Y].SetNumZeroed(MazeGrid[Y].Num());
+	}
+
+	for (int32 VertexNumber, i = 0; i < GraphPath.Num(); ++i)
+	{
+		VertexNumber = GraphPath[i];
+
+		Path.Grid[VertexNumber / MazeGrid[0].Num()][VertexNumber % MazeGrid[0].Num()] = 1;
+	}
+
+	Path.Length = Distances[EndVertex] + 1;
+	return Path;
+}
+
 void AMaze::ClearMaze() const
 {
 	FloorCells->ClearInstances();
@@ -169,27 +268,19 @@ void AMaze::ClearMaze() const
 void AMaze::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (!bGenerateInEditor)
-	{
-		GenerateMaze();
-	}
 }
 
 void AMaze::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-
-	if (bGenerateInEditor)
+#if WITH_EDITOR
+	if (Transform.Equals(LastMazeTransform))
 	{
-		const bool bShouldUpdate = Transform.Equals(LastMazeTransform) || !MazeGrid.Num();
-		GenerateMaze(bShouldUpdate);
+#endif
+		UpdateMaze();
+#if WITH_EDITOR
 	}
-	else
-	{
-		ClearMaze();
-	}
-
 	LastMazeTransform = Transform;
+#endif
 }
