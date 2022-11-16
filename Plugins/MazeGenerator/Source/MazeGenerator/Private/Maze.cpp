@@ -124,6 +124,8 @@ void AMaze::UpdateMaze()
 			}
 		}
 	}
+
+	EnableCollision(bUseCollision);
 }
 
 void AMaze::CreateMazeOutline() const
@@ -136,8 +138,8 @@ void AMaze::CreateMazeOutline() const
 	for (int32 X = -1; X < MazeSize.X + 1; ++X)
 	{
 		Location1.X = Location2.X = X * MazeCellSize.X;
-		OutlineWallCells->AddInstance(FTransform(Location1));
-		OutlineWallCells->AddInstance(FTransform(Location2));
+		OutlineWallCells->AddInstance(FTransform{Location1});
+		OutlineWallCells->AddInstance(FTransform{Location2});
 	}
 
 	Location1.X = -MazeCellSize.X;
@@ -145,8 +147,8 @@ void AMaze::CreateMazeOutline() const
 	for (int32 Y = 0; Y < MazeSize.Y; ++Y)
 	{
 		Location1.Y = Location2.Y = Y * MazeCellSize.Y;
-		OutlineWallCells->AddInstance(FTransform(Location1));
-		OutlineWallCells->AddInstance(FTransform(Location2));
+		OutlineWallCells->AddInstance(FTransform{Location1});
+		OutlineWallCells->AddInstance(FTransform{Location2});
 	}
 }
 
@@ -258,6 +260,25 @@ TArray<TArray<uint8>> AMaze::GetMazePath(const FMazeCoordinates& Start, const FM
 	OutLength = Distances[EndVertex] + 1;
 	return Path;
 }
+
+void AMaze::EnableCollision(const bool bShouldEnable)
+{
+	if (bShouldEnable)
+	{
+		FloorCells->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		WallCells->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		OutlineWallCells->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		PathFloorCells->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
+	else
+	{
+		FloorCells->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		WallCells->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		OutlineWallCells->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		PathFloorCells->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
 
 void AMaze::ClearMaze() const
 {

@@ -24,10 +24,12 @@ struct FMazeSize
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999, NoResetToDefault))
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite,
+		meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999, NoResetToDefault))
 	int32 X;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999, NoResetToDefault))
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite,
+		meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999, NoResetToDefault))
 	int32 Y;
 
 	FMazeSize(): X(5), Y(5)
@@ -45,10 +47,10 @@ struct FMazeCoordinates
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(NoSpinbox=true, ClampMin=0, NoResetToDefault))
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta=(NoSpinbox=true, ClampMin=0, NoResetToDefault))
 	int32 X;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(NoSpinbox=true, ClampMin=0, Delta=1, NoResetToDefault))
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta=(NoSpinbox=true, ClampMin=0, Delta=1, NoResetToDefault))
 	int32 Y;
 
 	FMazeCoordinates(): X(0), Y(0)
@@ -109,11 +111,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze|Pathfinder", meta=(ExposeOnSpawn))
 	bool bGeneratePath = false;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze|Pathfinder",
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Maze|Pathfinder",
 		meta=(ExposeOnSpawn, EditCondition="bGeneratePath", EditConditionHides))
 	FMazeCoordinates PathStart;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze|Pathfinder",
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Maze|Pathfinder",
 		meta=(ExposeOnSpawn, EditCondition="bGeneratePath", EditConditionHides))
 	FMazeCoordinates PathEnd;
 
@@ -121,12 +123,16 @@ public:
 		meta=(ExposeOnSpawn, EditCondition="bGeneratePath", EditConditionHides))
 	UStaticMesh* PathStaticMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Maze|Pathfinder",
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Maze|Pathfinder",
 		meta=(EditCondition="bGeneratePath", EditConditionHides))
-	int32 PathLength;
+	int32 PathLength{1};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze")
+	bool bUseCollision = true;
 
 protected:
-	// Unfortunately, UE reflection system doesn't support 2-dimensional arrays.
+	// Unfortunately, UE reflection system doesn't support 2-dimensional arrays. :(
+
 	TArray<TArray<uint8>> MazeGrid;
 
 	TArray<TArray<uint8>> MazePathGrid;
@@ -153,20 +159,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void UpdateMaze();
 
-	/** Updates Maze every time any parameter has been changed(except transform).
-	 *
+	/** 
+	 * Updates Maze every time any parameter has been changed(except transform).
+	 * 
 	 * Remember: this method is being called before BeginPlay. 
 	 */
 	virtual void OnConstruction(const FTransform& Transform) override;
-protected:
-	// Generate Maze with random size, seed and algorithm
-	// with path connecting top-left and bottom-right corners.
-	UFUNCTION(CallInEditor, Category="Maze", meta=(DisplayPriority=0, ShortTooltip = "Generate an arbitrary maze."))
-	virtual void Randomize();
 
-	virtual void CreateMazeOutline() const;
-
-	/** Returns path grid mapped into MazeGrid constrains. Creates a graph every time it is called.
+	/**
+	 * Returns path grid mapped into MazeGrid constrains. Creates a graph every time it is called.
 	 *
 	 * Note :
 	 * 
@@ -177,6 +178,17 @@ protected:
 	 */
 	virtual TArray<TArray<uint8>> GetMazePath(const FMazeCoordinates& Start, const FMazeCoordinates& End,
 	                                          int32& OutLength);
+protected:
+	/**
+	 * Generate Maze with random size, seed and 
+	 * algorithm with path connecting top-left and bottom-right corners.
+	 */
+	UFUNCTION(CallInEditor, Category="Maze", meta=(DisplayPriority=0, ShortTooltip = "Generate an arbitrary maze."))
+	virtual void Randomize();
+
+	virtual void CreateMazeOutline() const;
+
+	virtual void EnableCollision(const bool bShouldEnable);
 
 	// Clears all HISM instances.
 	virtual void ClearMaze() const;
