@@ -36,7 +36,7 @@ struct FMazeSize
 
 	operator FIntVector2() const
 	{
-		return FIntVector2(X, Y);
+		return FIntVector2{X, Y};
 	}
 };
 
@@ -45,10 +45,10 @@ struct FMazeCoordinates
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ClampMin=0, Delta=1, NoResetToDefault))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(NoSpinbox=true, ClampMin=0, NoResetToDefault))
 	int32 X;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ClampMin=0, Delta=1, NoResetToDefault))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(NoSpinbox=true, ClampMin=0, Delta=1, NoResetToDefault))
 	int32 Y;
 
 	FMazeCoordinates(): X(0), Y(0)
@@ -69,22 +69,7 @@ struct FMazeCoordinates
 
 	operator TPair<int32, int32>() const
 	{
-		return TPair<int32, int32>(X, Y);
-	}
-};
-
-USTRUCT(BlueprintType)
-struct FMazePath
-{
-	GENERATED_BODY()
-
-	TArray<TArray<uint8>> Grid;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	int32 Length;
-
-	FMazePath(): Length(0)
-	{
+		return TPair<int32, int32>{X, Y};
 	}
 };
 
@@ -104,7 +89,7 @@ public:
 	EGenerationAlgorithm GenerationAlgorithm;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze", meta=(ExposeOnSpawn, DisplayPriority=1))
-	int32 Seed = 0;
+	int32 Seed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze", meta=(ExposeOnSpawn, DisplayPriority=2))
 	FMazeSize MazeSize;
@@ -121,43 +106,30 @@ public:
 		meta=(ExposeOnSpawn, DisplayPriority=2))
 	UStaticMesh* OutlineStaticMesh;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Maze|Cells")
-	FVector2D MazeCellSize;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze|Pathfinder", meta=(ExposeOnSpawn))
-	bool bShowPath = false;
+	bool bGeneratePath = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze|Pathfinder",
-		meta=(ExposeOnSpawn, EditCondition="bShowPath", EditConditionHides))
+		meta=(ExposeOnSpawn, EditCondition="bGeneratePath", EditConditionHides))
 	FMazeCoordinates PathStart;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze|Pathfinder",
-		meta=(ExposeOnSpawn, EditCondition="bShowPath", EditConditionHides))
+		meta=(ExposeOnSpawn, EditCondition="bGeneratePath", EditConditionHides))
 	FMazeCoordinates PathEnd;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="Path Floor", Category="Maze|Pathfinder",
-		meta=(ExposeOnSpawn, EditCondition="bShowPath", EditConditionHides))
+		meta=(ExposeOnSpawn, EditCondition="bGeneratePath", EditConditionHides))
 	UStaticMesh* PathStaticMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze|Pathfinder",
-		meta=(EditCondition="bShowPath", EditConditionHides, ShowOnlyInnerProperties))
-	FMazePath MazePath;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Maze|Pathfinder",
+		meta=(EditCondition="bGeneratePath", EditConditionHides))
+	int32 PathLength;
 
 protected:
+	// Unfortunately, UE reflection system doesn't support 2-dimensional arrays.
 	TArray<TArray<uint8>> MazeGrid;
 
-	// Update Maze according to pre-set parameters: Size, Generation Algorithm, Seed and Path-related params.
-	UFUNCTION(BlueprintCallable)
-	virtual void UpdateMaze();
-
-	// Generate Maze with random size, seed and algorithm
-	// with path connecting top-left and bottom-right corners.
-	UFUNCTION(CallInEditor, Category="Maze", meta=(DisplayPriority=0, ShortTooltip = "Generate an arbitrary maze."))
-	virtual void Randomize();
-private:
-#if WITH_EDITOR
-	FTransform LastMazeTransform;
-#endif
+	TArray<TArray<uint8>> MazePathGrid;
 
 	TMap<EGenerationAlgorithm, TSharedPtr<Algorithm>> GenerationAlgorithms;
 
@@ -173,17 +145,47 @@ private:
 	UPROPERTY()
 	UHierarchicalInstancedStaticMeshComponent* PathFloorCells;
 
-	void CreateMazeOutline() const;
-
-	FMazePath GetMazePath(const FMazeCoordinates& Start, const FMazeCoordinates& End);
-
-	void ClearMaze() const;
-
-	FVector2D GetMaxCellSize() const;
-protected:
-	virtual void BeginPlay() override;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Maze|Cells")
+	FVector2D MazeCellSize;
 
 public:
-	// Remember: this method is being called before BeginPlay. 
+	// Update Maze according to pre-set parameters: Size, Generation Algorithm, Seed and Path-related params.
+	UFUNCTION(BlueprintCallable)
+	virtual void UpdateMaze();
+
+	/** Updates Maze every time any parameter has been changed(except transform).
+	 *
+	 * Remember: this method is being called before BeginPlay. 
+	 */
 	virtual void OnConstruction(const FTransform& Transform) override;
+protected:
+	// Generate Maze with random size, seed and algorithm
+	// with path connecting top-left and bottom-right corners.
+	UFUNCTION(CallInEditor, Category="Maze", meta=(DisplayPriority=0, ShortTooltip = "Generate an arbitrary maze."))
+	virtual void Randomize();
+
+	virtual void CreateMazeOutline() const;
+
+	/** Returns path grid mapped into MazeGrid constrains. Creates a graph every time it is called.
+	 *
+	 * Note :
+	 * 
+	 * Optimization is possible:
+	 * if the beginning or end has not changed, there is actually no need to create a new graph,
+	 * but due to the many parameters that can be changed, it is difficult to determine what exactly has changed,
+	 * so this optimization has been neglected.
+	 */
+	virtual TArray<TArray<uint8>> GetMazePath(const FMazeCoordinates& Start, const FMazeCoordinates& End,
+	                                          int32& OutLength);
+
+	// Clears all HISM instances.
+	virtual void ClearMaze() const;
+
+	virtual FVector2D GetMaxCellSize() const;
+
+
+#if WITH_EDITOR
+private:
+	FTransform LastMazeTransform;
+#endif
 };
