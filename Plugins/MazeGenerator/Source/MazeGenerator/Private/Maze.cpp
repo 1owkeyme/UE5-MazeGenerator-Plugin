@@ -6,6 +6,7 @@
 
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 
+
 #include "Algorithms/Algorithm.h"
 #include "Algorithms/Backtracker.h"
 #include "Algorithms/Division.h"
@@ -70,31 +71,29 @@ void AMaze::UpdateMaze()
 {
 	ClearMaze();
 
-	if (!(FloorCell && WallCell))
+	if (!(FloorStaticMesh && WallStaticMesh))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("To create maze specify FloorCell and WallCell."));
+		UE_LOG(LogTemp, Warning, TEXT("To create maze specify FloorStaticMesh and WallStaticMesh."));
 		return;
 	}
 
-	FloorCells->SetStaticMesh(FloorCell.StaticMesh);
-	WallCells->SetStaticMesh(WallCell.StaticMesh);
-
-	MazeCellSize = FloorCell.GetSize() > WallCell.GetSize() ? FloorCell.GetSize() : WallCell.GetSize();
-
-	if (OutlineWallCell)
+	FloorCells->SetStaticMesh(FloorStaticMesh);
+	WallCells->SetStaticMesh(WallStaticMesh);
+	if (OutlineStaticMesh)
 	{
-		OutlineWallCells->SetStaticMesh(OutlineWallCell.StaticMesh);
-		if (const FVector2D CellSize = OutlineWallCell.GetSize(); CellSize > MazeCellSize)
-		{
-			MazeCellSize = CellSize;
-		}
+		OutlineWallCells->SetStaticMesh(OutlineStaticMesh);
+	}
+	if (PathStaticMesh)
+	{
+		PathFloorCells->SetStaticMesh(PathStaticMesh);
+	}
+
+	MazeCellSize = GetMaxCellSize();
+
+	if (OutlineStaticMesh)
+	{
 		CreateMazeOutline();
 	}
-	if (PathFloorCell)
-	{
-		PathFloorCells->SetStaticMesh(PathFloorCell.StaticMesh);
-	}
-
 	MazeGrid = GenerationAlgorithms[GenerationAlgorithm]->GetGrid(MazeSize, Seed);
 
 	PathStart.ClampByMazeSize(MazeSize);
@@ -106,7 +105,7 @@ void AMaze::UpdateMaze()
 	{
 		for (int32 X = 0; X < MazeSize.X; ++X)
 		{
-			if (bShowPath && MazePath.Grid.Num() > 0 && MazePath.Grid[Y][X])
+			if (bShowPath && PathStaticMesh && MazePath.Grid.Num() > 0 && MazePath.Grid[Y][X])
 			{
 				const FVector Location(MazeCellSize.X * X, MazeCellSize.Y * Y, 0.f);
 				PathFloorCells->AddInstance(FTransform(Location));
@@ -265,6 +264,26 @@ void AMaze::ClearMaze() const
 	PathFloorCells->ClearInstances();
 }
 
+FVector2D AMaze::GetMaxCellSize() const
+{
+	const FVector FloorSize3D = FloorStaticMesh->GetBoundingBox().GetSize();
+	const FVector WallSize3D = WallStaticMesh->GetBoundingBox().GetSize();
+
+	const FVector2D FloorSize2D{FloorSize3D.X, FloorSize3D.Y};
+	const FVector2D WallSize2D{WallSize3D.X, WallSize3D.Y};
+
+	const FVector2D MaxCellSize = FloorSize2D > WallSize2D ? FloorSize2D : WallSize2D;
+	if (OutlineStaticMesh)
+	{
+		const FVector OutlineSize3D = OutlineStaticMesh->GetBoundingBox().GetSize();
+		if (const FVector2D OutlineSize2D{OutlineSize3D.X, OutlineSize3D.Y}; OutlineSize2D > MaxCellSize)
+		{
+			return OutlineSize2D;
+		}
+	}
+	return MaxCellSize;
+}
+
 void AMaze::Randomize()
 {
 	MazeSize.X = FMath::RandRange(3, 101) | 1; // | 1 to make odd.
@@ -274,7 +293,7 @@ void AMaze::Randomize()
 	const int32 Num = GenerationAlgorithms.GetKeys(Algorithms);
 	GenerationAlgorithm = Algorithms[FMath::RandRange(0, Num - 1)];
 
-	Seed = FMath::RandRange(0, MAX_int32 - 1);
+	Seed = FMath::RandRange(MIN_int32, MAX_int32);
 
 	PathStart.X = 0;
 	PathStart.X = 0;

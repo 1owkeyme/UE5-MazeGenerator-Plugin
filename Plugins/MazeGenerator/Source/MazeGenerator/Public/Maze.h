@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/StaticMesh.h"
 #include "GameFramework/Actor.h"
 
 #include "Maze.generated.h"
@@ -20,16 +19,15 @@ enum class EGenerationAlgorithm : uint8
 	Prim
 };
 
-
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FMazeSize
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999, NoResetToDefault))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999, NoResetToDefault))
 	int32 X;
 
-	UPROPERTY(EditAnywhere, meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999, NoResetToDefault))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999, NoResetToDefault))
 	int32 Y;
 
 	FMazeSize(): X(5), Y(5)
@@ -42,15 +40,15 @@ struct FMazeSize
 	}
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FMazeCoordinates
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, meta=(ClampMin=0, Delta=1, NoResetToDefault))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ClampMin=0, Delta=1, NoResetToDefault))
 	int32 X;
 
-	UPROPERTY(EditAnywhere, meta=(ClampMin=0, Delta=1, NoResetToDefault))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ClampMin=0, Delta=1, NoResetToDefault))
 	int32 Y;
 
 	FMazeCoordinates(): X(0), Y(0)
@@ -75,43 +73,14 @@ struct FMazeCoordinates
 	}
 };
 
-USTRUCT()
-struct FMazeCell
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, meta=(NoResetToDefault))
-	UStaticMesh* StaticMesh;
-
-	FVector2D GetSize()
-	{
-		if (StaticMesh)
-		{
-			const FVector StaticMeshSize = StaticMesh->GetBoundingBox().GetSize();
-			Size.X = StaticMeshSize.X;
-			Size.Y = StaticMeshSize.Y;
-		}
-		return Size;
-	}
-
-private:
-	FVector2D Size;
-
-public:
-	explicit operator bool() const
-	{
-		return StaticMesh != nullptr;
-	}
-};
-
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FMazePath
 {
 	GENERATED_BODY()
 
 	TArray<TArray<uint8>> Grid;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int32 Length;
 
 	FMazePath(): Length(0)
@@ -130,48 +99,61 @@ class MAZEGENERATOR_API AMaze : public AActor
 public:
 	AMaze();
 
-	UPROPERTY(EditAnywhere, Category="Maze", meta=(NoResetToDefault, DisplayPriority=0))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze",
+		meta=(NoResetToDefault, ExposeOnSpawn, DisplayPriority=0))
 	EGenerationAlgorithm GenerationAlgorithm;
 
-	UPROPERTY(EditAnywhere, Category="Maze", meta=(DisplayPriority=1))
-	uint64 Seed = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze", meta=(ExposeOnSpawn, DisplayPriority=1))
+	int32 Seed = 0;
 
-	UPROPERTY(EditAnywhere, Category="Maze", meta=(DisplayPriority=2))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze", meta=(ExposeOnSpawn, DisplayPriority=2))
 	FMazeSize MazeSize;
 
-	TArray<TArray<uint8>> MazeGrid;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="Floor", Category="Maze|Cells",
+		meta=(NoResetToDefault, ExposeOnSpawn, DisplayPriority=0))
+	UStaticMesh* FloorStaticMesh;
 
-	UPROPERTY(EditAnywhere, DisplayName="Floor", Category="Maze|Cells", meta=(NoResetToDefault, DisplayPriority=0))
-	FMazeCell FloorCell;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="Wall", Category="Maze|Cells",
+		meta=(NoResetToDefault, ExposeOnSpawn, DisplayPriority=1))
+	UStaticMesh* WallStaticMesh;
 
-	UPROPERTY(EditAnywhere, DisplayName="Wall", Category="Maze|Cells", meta=(NoResetToDefault, DisplayPriority=1))
-	FMazeCell WallCell;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="Outline Wall", Category="Maze|Cells",
+		meta=(ExposeOnSpawn, DisplayPriority=2))
+	UStaticMesh* OutlineStaticMesh;
 
-	UPROPERTY(EditAnywhere, DisplayName="Outline Wall", Category="Maze|Cells", meta=(DisplayPriority=2))
-	FMazeCell OutlineWallCell;
-
-	UPROPERTY(VisibleAnywhere, Category="Maze|Cells")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Maze|Cells")
 	FVector2D MazeCellSize;
 
-	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder")
-	bool bShowPath = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze|Pathfinder", meta=(ExposeOnSpawn))
+	bool bShowPath = false;
 
-	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder",
-		meta=(EditCondition="bShowPath", EditConditionHides))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze|Pathfinder",
+		meta=(ExposeOnSpawn, EditCondition="bShowPath", EditConditionHides))
 	FMazeCoordinates PathStart;
 
-	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder",
-		meta=(EditCondition="bShowPath", EditConditionHides))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze|Pathfinder",
+		meta=(ExposeOnSpawn, EditCondition="bShowPath", EditConditionHides))
 	FMazeCoordinates PathEnd;
 
-	UPROPERTY(EditAnywhere, DisplayName="Path Floor", Category="Maze|Pathfinder",
-		meta=(EditCondition="bShowPath", EditConditionHides, NoResetToDefault))
-	FMazeCell PathFloorCell;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, DisplayName="Path Floor", Category="Maze|Pathfinder",
+		meta=(ExposeOnSpawn, EditCondition="bShowPath", EditConditionHides))
+	UStaticMesh* PathStaticMesh;
 
-	UPROPERTY(EditAnywhere, Category="Maze|Pathfinder",
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze|Pathfinder",
 		meta=(EditCondition="bShowPath", EditConditionHides, ShowOnlyInnerProperties))
 	FMazePath MazePath;
 
+protected:
+	TArray<TArray<uint8>> MazeGrid;
+
+	// Update Maze according to pre-set parameters: Size, Generation Algorithm, Seed and Path-related params.
+	UFUNCTION(BlueprintCallable)
+	virtual void UpdateMaze();
+
+	// Generate Maze with random size, seed and algorithm
+	// with path connecting top-left and bottom-right corners.
+	UFUNCTION(CallInEditor, Category="Maze", meta=(DisplayPriority=0, ShortTooltip = "Generate an arbitrary maze."))
+	virtual void Randomize();
 private:
 #if WITH_EDITOR
 	FTransform LastMazeTransform;
@@ -191,17 +173,13 @@ private:
 	UPROPERTY()
 	UHierarchicalInstancedStaticMeshComponent* PathFloorCells;
 
-	void UpdateMaze();
-
 	void CreateMazeOutline() const;
 
 	FMazePath GetMazePath(const FMazeCoordinates& Start, const FMazeCoordinates& End);
 
 	void ClearMaze() const;
 
-	UFUNCTION(CallInEditor, Category="Maze", meta=(DisplayPriority=0))
-	void Randomize();
-
+	FVector2D GetMaxCellSize() const;
 protected:
 	virtual void BeginPlay() override;
 
