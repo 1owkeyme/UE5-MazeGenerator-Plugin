@@ -16,6 +16,21 @@
 #include "Algorithms/Prim.h"
 #include "Algorithms/Sidewinder.h"
 
+DEFINE_LOG_CATEGORY(LogMaze);
+
+FMazeSize::FMazeSize(): X(5), Y(5)
+{
+}
+
+FMazeSize::operator FIntVector2() const
+{
+	return FIntVector2{X, Y};
+}
+
+FMazeCoordinates::FMazeCoordinates(): X(0), Y(0)
+{
+}
+
 void FMazeCoordinates::ClampByMazeSize(const FMazeSize& MazeSize)
 {
 	if (X >= MazeSize.X)
@@ -26,6 +41,21 @@ void FMazeCoordinates::ClampByMazeSize(const FMazeSize& MazeSize)
 	{
 		Y = MazeSize.Y - 1;
 	}
+}
+
+bool FMazeCoordinates::operator==(const FMazeCoordinates& Other) const
+{
+	return X == Other.X && Y == Other.Y;
+}
+
+bool FMazeCoordinates::operator!=(const FMazeCoordinates& Other) const
+{
+	return !(*this == Other);
+}
+
+FMazeCoordinates::operator TTuple<int, int>() const
+{
+	return TPair<int32, int32>{X, Y};
 }
 
 AMaze::AMaze()
@@ -73,7 +103,7 @@ void AMaze::UpdateMaze()
 
 	if (!(FloorStaticMesh && WallStaticMesh))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("To create maze specify FloorStaticMesh and WallStaticMesh."));
+		UE_LOG(LogMaze, Warning, TEXT("To create maze specify FloorStaticMesh and WallStaticMesh."));
 		return;
 	}
 
@@ -231,7 +261,7 @@ TArray<TArray<uint8>> AMaze::GetMazePath(const FMazeCoordinates& Start, const FM
 	TArray<int32> GraphPath;
 	if (!Visited[EndVertex])
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Path is not reachable."));
+		UE_LOG(LogMaze, Warning, TEXT("Path is not reachable."));
 		return TArray<TArray<uint8>>();
 	}
 

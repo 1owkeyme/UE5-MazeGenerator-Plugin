@@ -7,6 +7,8 @@
 
 #include "Maze.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogMaze, Warning, All);
+
 UENUM(BlueprintType)
 enum class EGenerationAlgorithm : uint8
 {
@@ -32,14 +34,9 @@ struct FMazeSize
 		meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999, NoResetToDefault))
 	int32 Y;
 
-	FMazeSize(): X(5), Y(5)
-	{
-	}
+	FMazeSize();
 
-	operator FIntVector2() const
-	{
-		return FIntVector2{X, Y};
-	}
+	operator FIntVector2() const;
 };
 
 USTRUCT(BlueprintType)
@@ -53,26 +50,15 @@ struct FMazeCoordinates
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta=(NoSpinbox=true, ClampMin=0, Delta=1, NoResetToDefault))
 	int32 Y;
 
-	FMazeCoordinates(): X(0), Y(0)
-	{
-	}
+	FMazeCoordinates();
 
 	void ClampByMazeSize(const FMazeSize& MazeSize);
 
-	bool operator==(const FMazeCoordinates& Other) const
-	{
-		return X == Other.X && Y == Other.Y;
-	}
+	bool operator==(const FMazeCoordinates& Other) const;
 
-	bool operator!=(const FMazeCoordinates& Other) const
-	{
-		return !(*this == Other);
-	}
+	bool operator!=(const FMazeCoordinates& Other) const;
 
-	operator TPair<int32, int32>() const
-	{
-		return TPair<int32, int32>{X, Y};
-	}
+	operator TPair<int32, int32>() const;
 };
 
 class Algorithm;
@@ -125,7 +111,7 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Maze|Pathfinder",
 		meta=(EditCondition="bGeneratePath", EditConditionHides))
-	int32 PathLength{1};
+	int32 PathLength;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Maze")
 	bool bUseCollision = true;
