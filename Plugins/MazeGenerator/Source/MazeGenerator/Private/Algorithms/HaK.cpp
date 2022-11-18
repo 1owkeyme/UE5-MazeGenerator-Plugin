@@ -1,4 +1,6 @@
-﻿#include "HaK.h"
+﻿// Copyright LowkeyMe. All Rights Reserved. 2022
+
+#include "HaK.h"
 
 #include "Utils.h"
 

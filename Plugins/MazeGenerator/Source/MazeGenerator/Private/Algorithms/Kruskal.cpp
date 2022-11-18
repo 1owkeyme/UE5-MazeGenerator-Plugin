@@ -1,4 +1,4 @@
-﻿// Copyright LowkeyMe. All Rights Reserved.
+﻿// Copyright LowkeyMe. All Rights Reserved. 2022
 
 
 #include "Kruskal.h"

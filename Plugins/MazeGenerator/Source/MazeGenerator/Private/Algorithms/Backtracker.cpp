@@ -1,4 +1,6 @@
-﻿#include "Backtracker.h"
+﻿// Copyright LowkeyMe. All Rights Reserved. 2022
+
+#include "Backtracker.h"
 
 #include "Utils.h"
 

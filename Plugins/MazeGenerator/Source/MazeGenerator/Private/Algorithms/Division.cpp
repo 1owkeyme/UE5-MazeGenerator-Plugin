@@ -1,4 +1,6 @@
-﻿#include "Division.h"
+﻿// Copyright LowkeyMe. All Rights Reserved. 2022
+
+#include "Division.h"
 
 TArray<TArray<uint8>> Division::GetDirectionsGrid(const FIntVector2& Size, const FRandomStream& RandomStream)
 {

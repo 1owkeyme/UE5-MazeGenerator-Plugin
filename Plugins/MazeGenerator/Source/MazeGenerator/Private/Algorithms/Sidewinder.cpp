@@ -1,4 +1,6 @@
-﻿#include "Sidewinder.h"
+﻿// Copyright LowkeyMe. All Rights Reserved. 2022
+
+#include "Sidewinder.h"
 
 TArray<TArray<uint8>> Sidewinder::GetDirectionsGrid(const FIntVector2& Size, const FRandomStream& RandomStream)
 {

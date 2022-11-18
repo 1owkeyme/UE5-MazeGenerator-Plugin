@@ -1,4 +1,6 @@
-﻿#include "Eller.h"
+﻿// Copyright LowkeyMe. All Rights Reserved. 2022
+
+#include "Eller.h"
 
 TArray<TArray<uint8>> Eller::GetDirectionsGrid(const FIntVector2& Size, const FRandomStream& RandomStream)
 {

@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// Copyright LowkeyMe. All Rights Reserved. 2022
+
+#pragma once
 
 template <typename T>
 FORCEINLINE void ShuffleTArray(TArray<T>& Array, const FRandomStream& RandomStream)

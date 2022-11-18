@@ -1,4 +1,6 @@
-﻿#include "Algorithm.h"
+﻿// Copyright LowkeyMe. All Rights Reserved. 2022
+
+#include "Algorithm.h"
 
 EDirection OppositeDirection(const EDirection Direction)
 {
