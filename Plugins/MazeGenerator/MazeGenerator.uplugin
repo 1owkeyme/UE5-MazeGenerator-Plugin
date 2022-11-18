@@ -1,6 +1,6 @@
 {
   "FileVersion": 3,
-  "EngineVersion": "5.0", 
+  "EngineVersion": "5.1", 
   "Version": 1,
   "VersionName": "1.0",
   "FriendlyName": "Maze Generator",
@@ -9,7 +9,7 @@
   "CreatedBy": "LowkeyMe",
   "CreatedByURL": "https://github.com/1owkeyme",
   "DocsURL": "https://github.com/1owkeyme/UE5-MazeGeneratorPlugin/",
-  "MarketplaceURL": "",
+  "MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/75ba43809f8f4be3bc47b41d68a238f9",
   "SupportURL": "https://discord.gg/SEDe6Mrq",
   "CanContainContent": true,
   "IsBetaVersion": false,
