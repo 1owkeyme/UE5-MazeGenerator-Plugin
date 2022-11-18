@@ -325,14 +325,12 @@ FVector2D AMaze::GetMaxCellSize() const
 	const FVector2D FloorSize2D{FloorSize3D.X, FloorSize3D.Y};
 	const FVector2D WallSize2D{WallSize3D.X, WallSize3D.Y};
 
-	const FVector2D MaxCellSize = FloorSize2D > WallSize2D ? FloorSize2D : WallSize2D;
+	const FVector2D MaxCellSize = FVector2D::Max(FloorSize2D, WallSize2D);
 	if (OutlineStaticMesh)
 	{
 		const FVector OutlineSize3D = OutlineStaticMesh->GetBoundingBox().GetSize();
-		if (const FVector2D OutlineSize2D{OutlineSize3D.X, OutlineSize3D.Y}; OutlineSize2D > MaxCellSize)
-		{
-			return OutlineSize2D;
-		}
+		const FVector2D OutlineSize2D{OutlineSize3D.X, OutlineSize3D.Y};
+		return FVector2D::Max(MaxCellSize, OutlineSize2D);
 	}
 	return MaxCellSize;
 }
