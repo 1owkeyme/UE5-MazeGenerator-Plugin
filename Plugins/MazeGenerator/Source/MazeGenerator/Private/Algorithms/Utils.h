@@ -26,5 +26,5 @@ FORCEINLINE TArray<T> ShuffleTArray(TArray<T>&& Array, const FRandomStream& Rand
 			Swap(Array[i], Array[RandomIndex]);
 		}
 	}
-	return Array;
+	return MoveTemp(Array);
 }

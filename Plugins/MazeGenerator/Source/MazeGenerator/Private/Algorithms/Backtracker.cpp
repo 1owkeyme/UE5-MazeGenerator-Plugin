@@ -14,7 +14,7 @@ TArray<TArray<uint8>> Backtracker::GetDirectionsGrid(const FIntVector2& Size, co
 void Backtracker::CarvePassagesFrom(const int32 X, const int32 Y, TArray<TArray<uint8>>& Grid,
                                     const FRandomStream& RandomStream)
 {
-	const TArray<EDirection> Directions = ShuffleTArray(
+	const TArray<EDirection> Directions = ShuffleTArray<EDirection>(
 		TArray{
 			EDirection::West, EDirection::East,
 			EDirection::North, EDirection::South

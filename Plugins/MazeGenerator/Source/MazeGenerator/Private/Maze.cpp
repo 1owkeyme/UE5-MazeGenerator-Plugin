@@ -3,10 +3,6 @@
 
 #include "Maze.h"
 
-
-#include "Components/HierarchicalInstancedStaticMeshComponent.h"
-
-
 #include "Algorithms/Algorithm.h"
 #include "Algorithms/Backtracker.h"
 #include "Algorithms/Division.h"
@@ -15,6 +11,9 @@
 #include "Algorithms/Kruskal.h"
 #include "Algorithms/Prim.h"
 #include "Algorithms/Sidewinder.h"
+
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 
 DEFINE_LOG_CATEGORY(LogMaze);
 

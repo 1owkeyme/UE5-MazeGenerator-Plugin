@@ -26,11 +26,11 @@ struct FMazeSize
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite,
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Maze",
 		meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999, NoResetToDefault))
 	int32 X;
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite,
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Maze",
 		meta=(ClampMin=3, UIMin=5, UIMax=101, ClampMax=9999, NoResetToDefault))
 	int32 Y;
 
@@ -44,10 +44,12 @@ struct FMazeCoordinates
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta=(NoSpinbox=true, ClampMin=0, NoResetToDefault))
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Maze",
+		meta=(NoSpinbox=true, ClampMin=0, NoResetToDefault))
 	int32 X;
 
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, meta=(NoSpinbox=true, ClampMin=0, Delta=1, NoResetToDefault))
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="Maze",
+		meta=(NoSpinbox=true, ClampMin=0, Delta=1, NoResetToDefault))
 	int32 Y;
 
 	FMazeCoordinates();
@@ -117,8 +119,6 @@ public:
 	bool bUseCollision = true;
 
 protected:
-	// Unfortunately, UE reflection system doesn't support 2-dimensional arrays. :(
-
 	TArray<TArray<uint8>> MazeGrid;
 
 	TArray<TArray<uint8>> MazePathGrid;
@@ -137,12 +137,12 @@ protected:
 	UPROPERTY()
 	UHierarchicalInstancedStaticMeshComponent* PathFloorCells;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Maze|Cells")
-	FVector2D MazeCellSize;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Maze|Cells")
+	FVector2D MazeCellSize;	
 
 public:
 	// Update Maze according to pre-set parameters: Size, Generation Algorithm, Seed and Path-related params.
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category="Maze")
 	virtual void UpdateMaze();
 
 	/** 

@@ -35,7 +35,8 @@ TArray<TArray<uint8>> Eller::GetDirectionsGrid(const FIntVector2& Size, const FR
 				const uint32 DissolvedSet = Row[X + 1];
 				do
 				{
-					Row[X++ + 1] = Row[X];
+					Row[X + 1] = Row[X];
+					X++;
 				}
 				while (X < Size.X - 1 && Row[X + 1] == DissolvedSet);
 			}
@@ -91,7 +92,8 @@ TArray<TArray<uint8>> Eller::GetDirectionsGrid(const FIntVector2& Size, const FR
 			const uint32 DissolvedSet = Row[X + 1];
 			do
 			{
-				Row[X++ + 1] = Row[X];
+				Row[X + 1] = Row[X];
+				X++;
 			}
 			while (X < Size.X - 1 && Row[X + 1] == DissolvedSet);
 

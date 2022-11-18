@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+#include "Math/RandomStream.h"
+
 
 enum class EDirection : uint8
 {
