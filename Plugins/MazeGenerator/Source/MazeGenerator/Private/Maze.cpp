@@ -329,8 +329,11 @@ FVector2D AMaze::GetMaxCellSize() const
 	if (OutlineStaticMesh)
 	{
 		const FVector OutlineSize3D = OutlineStaticMesh->GetBoundingBox().GetSize();
-		const FVector2D OutlineSize2D{OutlineSize3D.X, OutlineSize3D.Y};
-		return FVector2D::Max(MaxCellSize, OutlineSize2D);
+		if (const FVector2D OutlineSize2D{OutlineSize3D.X, OutlineSize3D.Y};
+			OutlineSize2D.ComponentwiseAllGreaterThan(MaxCellSize))
+		{
+			return OutlineSize2D;
+		}
 	}
 	return MaxCellSize;
 }
