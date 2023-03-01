@@ -5,6 +5,7 @@
 ## Table of Contents
 
 - [About](#about)
+- [Enable Plugin](#enable-plugin)
 - [Quick Start](#quick-start)
 - [Generation Algorithms](#generation-algorithms)
 - [Limitations](#limitations)
@@ -21,6 +22,24 @@ This is a plugin for UE5 that allows you to create various mazes using the follo
 - Generation algorithm
 
 This plugin supports pathfinding.
+
+---
+
+## Enable Plugin
+
+1. Open plugins list **Edit->Plugins**:
+
+![image](https://user-images.githubusercontent.com/111310807/222064589-3038b999-3a34-4e9d-b194-72f5498b8acd.png)
+
+
+2. Search for MazeGenerator in search box and check the checkbox. Then restart your project.
+
+![image](https://user-images.githubusercontent.com/111310807/222064484-10c72947-3979-42da-a926-55bb98e6eb89.png)
+
+3. Make sure plugins are shown in content browser. You can toggle visibility as follows:
+
+![image](https://user-images.githubusercontent.com/111310807/222065237-c0bc2b18-0d3c-4238-8a52-fd55f3a9b139.png)
+
 
 ---
 
