@@ -4,12 +4,14 @@
 
 ## Table of Contents
 
-- [About](#about)
-- [Enable Plugin](#enable-plugin)
-- [Quick Start](#quick-start)
-- [Generation Algorithms](#generation-algorithms)
-- [Limitations](#limitations)
-- [Notes](#notes)
+- [UE5 Maze Generator Plugin](#ue5-maze-generator-plugin)
+  - [Table of Contents](#table-of-contents)
+  - [About](#about)
+  - [Enable Plugin](#enable-plugin)
+  - [Quick Start](#quick-start)
+  - [Generation Algorithms](#generation-algorithms)
+  - [Limitations](#limitations)
+  - [Notes](#notes)
 
 ---
 
@@ -27,47 +29,49 @@ This plugin supports pathfinding.
 
 ## Enable Plugin
 
-1. Open plugins list **Edit->Plugins**:
+Before enabling plugin ensure you have installed it in engine of appropriate version inside Epic Games launcher:
 
-![image](https://user-images.githubusercontent.com/111310807/222064589-3038b999-3a34-4e9d-b194-72f5498b8acd.png)
-
-
-2. Search for MazeGenerator in search box and check the checkbox. Then restart your project.
-
-![image](https://user-images.githubusercontent.com/111310807/222064484-10c72947-3979-42da-a926-55bb98e6eb89.png)
-
-3. Make sure plugins are shown in content browser. You can toggle visibility as follows:
-
-![image](https://user-images.githubusercontent.com/111310807/222065237-c0bc2b18-0d3c-4238-8a52-fd55f3a9b139.png)
-
+![](./Images/install_to_engine.png)
 
 ---
+
+Open plugins list **Edit->Plugins**:
+
+![](./Images/click_plugins.png)
+
+---
+
+Search for MazeGenerator in search box and check the checkbox against MazeGenerator plugin. Then restart your project.
+
+![](./Images/enable_plugin.png)
+
+---
+
+Make sure plugins are shown in content browser. You can toggle visibility as follows:
+
+![](./Images/show_plugin.png)
 
 ## Quick Start
 
 To create your first maze create Blueprint class based on `Maze` class:
 
-![](./Images/derive_from.jpg)
+![](./Images/create_maze.png)
 
 ---
 
-In the newly created Blueprint class select _Class Defaults_:
+In the newly created Blueprint class select _Class Defaults_ and play with available parameters:
 
-![](./Images/class_defaults.jpg)
+![](./Images/class_defaults.png)
 
----
+_Note: size can be specified only on instances(i.e. on actors placed on level)_
 
-Set `Floor` and `Wall` Static Meshes in _Details_ panel:
-
-![](./Images/expand_cells.jpg)
-
-![](./Images/set_cells.jpg)
+Set `Floor` and `Wall` Static Meshes under _Details_ panel.
 
 ---
 
 Instantiate Maze by dragging Blueprint into level and play with parameters:
 
-![](./Images/change_params.jpg)
+![](./Images/place_on_level.png)
 
 ## Generation Algorithms
 
@@ -86,7 +90,8 @@ Unfortunately, Unreal Engine Reflection System doesn't support 2D arrays, so leg
 If you want to work directly with the maze grid or path, inherit from the `Maze` class and expand the functionality directly using C++.
 
 ## Notes
+
 - Generated mazes are perfect
 - Under the plugin content folder is an example of a `Maze` Blueprint with some logic
 - Instances of `Maze` have _Randomize_ button
-- Source code of the plugin can be found under  _Plugins/MazeGenerator/Source/MazeGenerator_
+- Source code of the plugin can be found under _Plugins/MazeGenerator/Source/MazeGenerator_
