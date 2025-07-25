@@ -1,8 +1,8 @@
 {
   "FileVersion": 3,
-  "EngineVersion": "5.5", 
+  "EngineVersion": "5.6",
   "Version": 3,
-  "VersionName": "1.0.0",
+  "VersionName": "1.0.1",
   "FriendlyName": "Maze Generator",
   "Description": "Generate mazes with various algorithms.",
   "Category": "Other",
@@ -21,7 +21,8 @@
       "Type": "Runtime",
       "LoadingPhase": "Default",
       "WhitelistPlatforms": [
-        "Win64"
+        "Win64",
+        "Mac"
       ]
     }
   ]
